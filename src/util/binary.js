@@ -1,6 +1,4 @@
-import { Buffer } from 'buffer';
-
-export const binaryStringToArrayBuffer = (str) => {
+export const binaryStringToUint8Array = (str) => {
     const len = str.length;
     const uint8Array = new Uint8Array(len);
 
@@ -8,24 +6,22 @@ export const binaryStringToArrayBuffer = (str) => {
         uint8Array[i] = str.charCodeAt(i);
     }
 
-    return uint8Array.buffer;
+    return uint8Array;
 };
 
-export const arrayBufferToBinaryString = (arrayBuffer) =>
-    String.fromCharCode.apply(null, new Uint8Array(arrayBuffer));
+export const uint8ArrayToBinaryString = (uint8Array) =>
+    String.fromCharCode.apply(null, uint8Array);
 
-export const hexStringToArrayBuffer = (str) =>
-    new Uint8Array(str.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))).buffer;
+export const hexStringToUint8Array = (str) =>
+    new Uint8Array(str.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
 
-export const arrayBufferToHexString = (arrayBuffer) =>
-    Array.prototype.map.call(new Uint8Array(arrayBuffer), (x) => (`00${x.toString(16)}`).slice(-2)).join('');
+export const uint8ArrayToHexString = (uint8Array) =>
+    Array.prototype.map.call(uint8Array, (x) => (`00${x.toString(16)}`).slice(-2)).join('');
 
-export const nodeBufferToArrayBuffer = (buffer) =>
-    buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+export const typedArrayToUint8Array = (typedArray) =>
+    new Uint8Array(typedArray.buffer.slice(typedArray.byteOffset, typedArray.byteOffset + typedArray.byteLength));
 
-export const arrayBufferToNodeBuffer = (arrayBuffer) => Buffer.from(arrayBuffer);
-
-export const bnToArrayBuffer = (bn) => {
+export const bnToUint8Array = (bn) => {
     const numArray = bn.toArray();
 
     /* eslint-disable no-bitwise */
@@ -35,15 +31,14 @@ export const bnToArrayBuffer = (bn) => {
     }
     /* eslint-enable no-bitwise */
 
-    return Uint8Array.from(numArray).buffer;
+    return Uint8Array.from(numArray);
 };
 
-export const integerFromArrayBuffer = (arrayBuffer) => {
-    if (arrayBuffer.byteLength > 32) {
+export const uint8ArrayToInteger = (uint8Array) => {
+    if (uint8Array.byteLength > 32) {
         throw new Error('Only 32 byte integers is supported');
     }
 
-    const uint8Array = new Uint8Array(arrayBuffer);
     let integer = 0;
     let byteCount = 0;
 
@@ -52,7 +47,7 @@ export const integerFromArrayBuffer = (arrayBuffer) => {
         integer = (integer << 8) + uint8Array[byteCount];
         /* eslint-enable no-bitwise */
         byteCount += 1;
-    } while (arrayBuffer.byteLength > byteCount);
+    } while (uint8Array.byteLength > byteCount);
 
     return integer;
 };

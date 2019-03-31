@@ -1,36 +1,36 @@
-import { pkcs1, pkcs1Pem, pkcs8, pkcs8Pem } from './formats';
-import { validateInputKey, validateFormat, validateFormats, validateDecomposedKey } from './util/validator';
+import { pkcs1Der, pkcs1Pem, pkcs8Der, pkcs8Pem } from './formats';
+import { validateInputKey, validateFormat, validateDecomposedKey } from './util/validator';
+import { UnrecognizedInputKeyError, InvalidInputKeyError } from './util/errors';
 
 const PRIVATE_FORMATS = {
     'pkcs1-pem': pkcs1Pem,
     'pkcs8-pem': pkcs8Pem,
-    pkcs1,
-    pkcs8,
+    'pkcs1-der': pkcs1Der,
+    'pkcs8-der': pkcs8Der,
 };
 
-const PUBLIC_FORMATS = {
-    'pkcs1-pem': pkcs1Pem,
-    'pkcs8-pem': pkcs8Pem,
-    pkcs1,
-    pkcs8,
-};
+// const PUBLIC_FORMATS = {
+//     'pkcs1-pem': pkcs1Pem,
+//     'pkcs8-pem': pkcs8Pem,
+//     pkcs1,
+//     pkcs8,
+// };
 
-const decomposeKey = (FORMATS, inputKey, options) => {
+const decomposeKey = (supportedFormats, inputKey, options) => {
     inputKey = validateInputKey(inputKey);
     options = {
         password: null,
-        format: Object.keys(FORMATS),
+        format: Object.keys(supportedFormats),
         ...options,
     };
 
-    if (typeof options.format === 'string') {
-        const format = validateFormat(options.format, FORMATS);
+    if (!Array.isArray(options.format)) {
+        const format = validateFormat(options.format, supportedFormats);
 
-        return FORMATS[format].decomposeKey(inputKey, options);
+        return supportedFormats[format].decomposeKey(inputKey, options);
     }
 
-    // Check if any of the passed formats is invalid
-    const formats = validateFormats(options.format, FORMATS);
+    const formats = options.format.map((format) => validateFormat(format, supportedFormats));
 
     // Attempt to decompose the keys, until one succeeds
     // Along the way, we collect the errors for each format
@@ -41,44 +41,42 @@ const decomposeKey = (FORMATS, inputKey, options) => {
         const format = formats[x];
 
         try {
-            decomposeKey = FORMATS[format].decomposeKey(inputKey, options);
+            decomposeKey = supportedFormats[format].decomposeKey(inputKey, options);
             break;
         } catch (err) {
-            errors[format] = err;
-
-            // If the error code is present and is NOT `INVALID_INPUT`, it means that we were
-            // able to recognize the key but some other error occurred
-            if (err.code && err.code !== 'INVALID_KEY') {
-                throw err;
+            // Skip If the error is a InvalidInputKeyError
+            if (err instanceof InvalidInputKeyError) {
+                errors[format] = err;
+                continue;
             }
+
+            err.format = format;
+            throw err;
         }
     }
 
     if (!decomposeKey) {
-        throw Object.assign(
-            new Error('No compatible format was found for the given key'),
-            { code: 'NO_COMPATIBLE_FORMAT', errors }
-        );
+        throw new UnrecognizedInputKeyError(errors);
     }
 
     return decomposeKey;
 };
 
-const composeKey = (FORMATS, decomposedKey, options) => {
+const composeKey = (supportedFormats, decomposedKey, options) => {
     options = {
         password: null,
         ...options,
     };
 
-    decomposedKey = validateDecomposedKey(decomposedKey, FORMATS);
+    decomposedKey = validateDecomposedKey(decomposedKey, supportedFormats);
 
-    return FORMATS[decomposedKey.format].composeKey(decomposedKey, options);
+    return supportedFormats[decomposedKey.format].composeKey(decomposedKey, options);
 };
 
 export const decomposePrivateKey = (inputKey, options) => decomposeKey(PRIVATE_FORMATS, inputKey, options);
 
-export const decomposePublicKey = (inputKey, options) => decomposeKey(PUBLIC_FORMATS, inputKey, options);
+// export const decomposePublicKey = (inputKey, options) => decomposeKey(PUBLIC_FORMATS, inputKey, options);
 
 export const composePrivateKey = (decomposedKey, options) => composeKey(PRIVATE_FORMATS, decomposedKey, options);
 
-export const composePublicKey = (decomposedKey, options) => composeKey(PUBLIC_FORMATS, decomposedKey, options);
+// export const composePublicKey = (decomposedKey, options) => composeKey(PUBLIC_FORMATS, decomposedKey, options);

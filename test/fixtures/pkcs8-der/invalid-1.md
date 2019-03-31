@@ -1,0 +1,1 @@
+> A key with an invalid key algorithm OID (manually crafted)

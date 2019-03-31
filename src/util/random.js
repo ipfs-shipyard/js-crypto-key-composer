@@ -1,6 +1,6 @@
-import random from 'node-forge/lib/util';
-import { binaryStringToArrayBuffer } from './binary';
+import random from 'node-forge/lib/random';
+import { binaryStringToUint8Array } from './binary';
 
-const randomBytes = (size) => binaryStringToArrayBuffer(random.getBytesSync(size));
+const randomBytes = (size) => binaryStringToUint8Array(random.getBytesSync(size));
 
 export default randomBytes;

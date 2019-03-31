@@ -1,28 +1,21 @@
 import { encode as encodePem, decode as decodePem } from 'node-forge/lib/pem';
-import { decomposeKey as decomposePkc8Key, composeKey as composePkcs8Key } from './pkcs8';
-import { binaryStringToArrayBuffer, arrayBufferToBinaryString } from '../../util/binary';
+import { decomposeKey as decomposePkc8DerKey, composeKey as composePkcs8DerKey } from './pkcs8-der';
+import { binaryStringToUint8Array, uint8ArrayToBinaryString } from '../../util/binary';
+import { InvalidInputKeyError } from '../../util/errors';
 
-export const decomposeKey = (pemStr, options) => {
-    if (typeof pemStr !== 'string') {
-        throw Object.assign(
-            new Error('The input for PKCS8-PEM must be a string'),
-            { code: 'INVALID_INPUT' }
-        );
-    }
+export const decomposeKey = (pem, options) => {
+    const pemStr = uint8ArrayToBinaryString(pem);
 
-    let pem;
+    let decodedPem;
 
     try {
-        pem = decodePem(pemStr)[0];
+        decodedPem = decodePem(pemStr)[0];
     } catch (err) {
-        throw Object.assign(
-            new Error('Failed to decode PKCS8 as PEM'),
-            { code: 'INVALID_INPUT', originalError: err }
-        );
+        throw new InvalidInputKeyError('Failed to decode PKCS8 as PEM');
     }
 
-    const pkcs8Key = binaryStringToArrayBuffer(pem.body);
-    const decomposedKey = decomposePkc8Key(pkcs8Key, options);
+    const pkcs8Key = binaryStringToUint8Array(decodedPem.body);
+    const decomposedKey = decomposePkc8DerKey(pkcs8Key, options);
 
     decomposedKey.format = 'pkcs8-pem';
 
@@ -30,11 +23,11 @@ export const decomposeKey = (pemStr, options) => {
 };
 
 export const composeKey = (decomposedKey, options) => {
-    const pkcs8Key = composePkcs8Key(decomposedKey, options);
+    const pkcs8Key = composePkcs8DerKey(decomposedKey, options);
 
     const pem = {
         type: options.password ? 'ENCRYPTED PRIVATE KEY' : 'PRIVATE KEY',
-        body: arrayBufferToBinaryString(pkcs8Key),
+        body: uint8ArrayToBinaryString(pkcs8Key),
     };
 
     return encodePem(pem).replace(/\r/g, '');

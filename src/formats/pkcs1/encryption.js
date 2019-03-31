@@ -1,196 +1,204 @@
-import random from 'node-forge/lib/random';
-import util from 'node-forge/lib/util';
-import aes from 'node-forge/lib/aes';
-import des from 'node-forge/lib/des';
-import rc2 from 'node-forge/lib/rc2';
-import pbe from 'node-forge/lib/pbe';
-import 'node-forge/lib/md5'; // Necessary for pbe.opensslDeriveBytes
-import { binaryStringToArrayBuffer, arrayBufferToBinaryString, hexStringToArrayBuffer, arrayBufferToHexString } from '../../util/binary';
-import { OIDS } from '../../util/oid';
+import {
+    createOpenSslKeyDeriver,
+    createAesDecrypter, createAesEncrypter,
+    createDesDecrypter, createDesEncrypter,
+    createRc2Decrypter, createRc2Encrypter,
+} from '../../util/pbe';
+import { binaryStringToUint8Array, hexStringToUint8Array, uint8ArrayToHexString } from '../../util/binary';
 import { validateAlgorithmIdentifier } from '../../util/validator';
+import { UnsupportedAlgorithmError, MissingPasswordError } from '../../util/errors';
+import randomBytes from '../../util/random';
 
-export const decryptPemBody = (pem, password) => {
-    const encryptionAlgorithm = {
-        id: null,
-        iv: hexStringToArrayBuffer(pem.dekInfo.parameters),
-    };
+const decryptPemBody = (pem, password) => {
+    if (!password) {
+        throw new MissingPasswordError('Please specify the password to decrypt the key');
+    }
 
-    let dkLen;
-    let cipherFn;
+    let derivedKeyLength;
+    let decryptFn;
+
+    let encryptionAlgorithmId;
+    const encryptionAlgorithmParams = { iv: hexStringToUint8Array(pem.dekInfo.parameters) };
 
     switch (pem.dekInfo.algorithm) {
-    case 'DES-CBC':
-        encryptionAlgorithm.id = 'desCBC';
-        dkLen = 8;
-        cipherFn = des.createDecryptionCipher;
-        break;
-    case 'DES-EDE3-CBC':
-        encryptionAlgorithm.id = 'des-EDE3-CBC';
-        dkLen = 24;
-        cipherFn = des.createDecryptionCipher;
-        break;
     case 'AES-128-CBC':
-        encryptionAlgorithm.id = 'aes128-CBC';
-        dkLen = 16;
-        cipherFn = aes.createDecryptionCipher;
+        encryptionAlgorithmId = 'aes128-cbc';
+        derivedKeyLength = 16;
+        decryptFn = createAesDecrypter(encryptionAlgorithmParams);
         break;
     case 'AES-192-CBC':
-        encryptionAlgorithm.id = 'aes192-CBC';
-        dkLen = 24;
-        cipherFn = aes.createDecryptionCipher;
+        encryptionAlgorithmId = 'aes192-cbc';
+        derivedKeyLength = 24;
+        decryptFn = createAesDecrypter(encryptionAlgorithmParams);
         break;
     case 'AES-256-CBC':
-        encryptionAlgorithm.id = 'aes256-CBC';
-        dkLen = 32;
-        cipherFn = aes.createDecryptionCipher;
+        encryptionAlgorithmId = 'aes256-cbc';
+        derivedKeyLength = 32;
+        decryptFn = createAesDecrypter(encryptionAlgorithmParams);
         break;
     case 'RC2-40-CBC':
-        encryptionAlgorithm.id = 'rc2-cbc';
-        encryptionAlgorithm.rc2ParameterVersion = 40;
-        dkLen = 5;
-        cipherFn = (key) => rc2.createDecryptionCipher(key, 40);
+        encryptionAlgorithmId = 'rc2-cbc';
+        encryptionAlgorithmParams.bits = 40;
+        derivedKeyLength = 5;
+        decryptFn = createRc2Decrypter(encryptionAlgorithmParams);
         break;
     case 'RC2-64-CBC':
-        encryptionAlgorithm.id = 'rc2-cbc';
-        encryptionAlgorithm.rc2ParameterVersion = 64;
-        dkLen = 8;
-        cipherFn = (key) => rc2.createDecryptionCipher(key, 64);
+        encryptionAlgorithmId = 'rc2-cbc';
+        encryptionAlgorithmParams.bits = 64;
+        derivedKeyLength = 8;
+        decryptFn = createRc2Decrypter(encryptionAlgorithmParams);
         break;
     case 'RC2-128-CBC':
-        encryptionAlgorithm.id = 'rc2-cbc';
-        encryptionAlgorithm.rc2ParameterVersion = 128;
-        dkLen = 16;
-        cipherFn = (key) => rc2.createDecryptionCipher(key, 128);
+    case 'RC2-CBC':
+        encryptionAlgorithmId = 'rc2-cbc';
+        encryptionAlgorithmParams.bits = 128;
+        derivedKeyLength = 16;
+        decryptFn = createRc2Decrypter(encryptionAlgorithmParams);
+        break;
+    case 'DES-CBC':
+        encryptionAlgorithmId = 'des-cbc';
+        derivedKeyLength = 8;
+        decryptFn = createDesDecrypter(encryptionAlgorithmParams);
+        break;
+    case 'DES-EDE3-CBC':
+        encryptionAlgorithmId = 'des-ede3-cbc';
+        derivedKeyLength = 24;
+        decryptFn = createDesDecrypter(encryptionAlgorithmParams);
         break;
     default:
-        throw Object.assign(
-            new Error(`Unsupported DEK-INFO algorithm '${pem.dekInfo.algorithm}'`),
-            { code: 'UNSUPPORTED_ALGORITHM' }
-        );
+        throw new UnsupportedAlgorithmError(`Unsupported DEK-INFO algorithm '${pem.dekInfo.algorithm}'`);
     }
 
     // Use OpenSSL legacy key derivation
-    const iv = arrayBufferToBinaryString(encryptionAlgorithm.iv);
-    const dk = pbe.opensslDeriveBytes(password, iv.substr(0, 8), dkLen);
-    const cipher = cipherFn(dk);
+    const deriveKeyFn = createOpenSslKeyDeriver({
+        salt: encryptionAlgorithmParams.iv.slice(0, 8),
+        keyLength: derivedKeyLength,
+    });
 
-    cipher.start(iv);
-    cipher.update(util.createBuffer(pem.body));
-
-    if (!cipher.finish()) {
-        throw Object.assign(
-            new Error('Decryption failed, mostly likely the password is wrong'),
-            { code: 'DECRYPTION_FAILED' }
-        );
-    }
+    const derivedKey = deriveKeyFn(password);
+    const decryptedPemBody = decryptFn(derivedKey, binaryStringToUint8Array(pem.body));
 
     return {
-        encryptionAlgorithm,
-        pemBody: binaryStringToArrayBuffer(cipher.output.getBytes()),
+        encryptionAlgorithm: {
+            id: encryptionAlgorithmId,
+            ...encryptionAlgorithmParams,
+        },
+        pemBody: decryptedPemBody,
     };
 };
 
-export const encryptPemBody = (pemBody, encryptionAlgorithm, password) => {
-    encryptionAlgorithm = validateAlgorithmIdentifier(encryptionAlgorithm, 'aes256-CBC');
+const encryptPemBody = (pemBody, encryptionAlgorithm, password) => {
+    encryptionAlgorithm = validateAlgorithmIdentifier(encryptionAlgorithm || 'aes256-cbc', 'encryption');
 
-    const algorithmName = OIDS[encryptionAlgorithm.id] || encryptionAlgorithm.id;
+    let derivedKeyLength;
+    let iv;
+    let encryptFn;
+
     let dekInfoAlgorithm;
 
-    let dkLen;
-    let cipherFn;
-    let ivBytes;
-
-    switch (algorithmName) {
-    case 'desCBC':
-        dekInfoAlgorithm = 'DES-CBC';
-        dkLen = 8;
-        ivBytes = 8;
-        cipherFn = des.createEncryptionCipher;
-        break;
-    case 'des-EDE3-CBC':
-        dekInfoAlgorithm = 'DES-EDE3-CBC';
-        dkLen = 24;
-        ivBytes = 8;
-        cipherFn = des.createEncryptionCipher;
-        break;
-    case 'aes128-CBC':
+    switch (encryptionAlgorithm.id) {
+    case 'aes128-cbc':
         dekInfoAlgorithm = 'AES-128-CBC';
-        dkLen = 16;
-        ivBytes = 16;
-        cipherFn = aes.createEncryptionCipher;
+        derivedKeyLength = 16;
+        iv = encryptionAlgorithm.iv || randomBytes(16);
+        encryptFn = createAesEncrypter({ iv });
         break;
-    case 'aes192-CBC':
+    case 'aes192-cbc':
         dekInfoAlgorithm = 'AES-192-CBC';
-        dkLen = 24;
-        ivBytes = 16;
-        cipherFn = aes.createEncryptionCipher;
+        derivedKeyLength = 24;
+        iv = encryptionAlgorithm.iv || randomBytes(16);
+        encryptFn = createAesEncrypter({ iv });
         break;
-    case 'aes256-CBC':
+    case 'aes256-cbc':
         dekInfoAlgorithm = 'AES-256-CBC';
-        dkLen = 32;
-        ivBytes = 16;
-        cipherFn = aes.createEncryptionCipher;
+        derivedKeyLength = 32;
+        iv = encryptionAlgorithm.iv || randomBytes(16);
+        encryptFn = createAesEncrypter({ iv });
         break;
     case 'rc2-cbc': {
-        ivBytes = 8;
+        const bits = encryptionAlgorithm.bits || 128;
 
-        const rc2ParameterVersion = encryptionAlgorithm.parameters.rc2ParameterVersion || 128;
+        iv = encryptionAlgorithm.iv || randomBytes(8);
 
-        switch (rc2ParameterVersion) {
+        // RC2-CBCParameter encoding of the "effective key bits" as defined in:
+        // https://tools.ietf.org/html/rfc2898#appendix-B.2.3
+        switch (bits) {
         case 40:
             dekInfoAlgorithm = 'RC2-40-CBC';
-            dkLen = 5;
-            cipherFn = (key) => rc2.createEncryptionCipher(key, 40);
+            derivedKeyLength = 5;
             break;
         case 64:
             dekInfoAlgorithm = 'RC2-64-CBC';
-            dkLen = 8;
-            cipherFn = (key) => rc2.createEncryptionCipher(key, 64);
+            derivedKeyLength = 8;
             break;
         case 128:
-            dekInfoAlgorithm = 'RC2-128-CBC';
-            dkLen = 16;
-            cipherFn = (key) => rc2.createEncryptionCipher(key, 128);
+            dekInfoAlgorithm = 'RC2-CBC';
+            derivedKeyLength = 16;
             break;
         default:
-            throw Object.assign(
-                new Error(`Unsupported rc2ParameterVersion '${rc2ParameterVersion}'`),
-                { code: 'UNSUPPORTED_ALGORITHM' }
-            );
+            throw new UnsupportedAlgorithmError(`Unsupported RC2 bits parameter with value '${bits}'`);
         }
+
+        encryptFn = createRc2Encrypter({ iv, bits });
+
         break;
     }
+    case 'des-cbc':
+        dekInfoAlgorithm = 'DES-CBC';
+        derivedKeyLength = 8;
+        iv = encryptionAlgorithm.iv || randomBytes(8);
+        encryptFn = createDesEncrypter({ iv });
+        break;
+    case 'des-ede3-cbc':
+        dekInfoAlgorithm = 'DES-EDE3-CBC';
+        derivedKeyLength = 24;
+        iv = encryptionAlgorithm.iv || randomBytes(8);
+        encryptFn = createDesEncrypter({ iv });
+        break;
     default:
-        throw Object.assign(
-            new Error(`Unsupported encryption algorithm id '${encryptionAlgorithm.id}'`),
-            { code: 'UNSUPPORTED_ALGORITHM' }
-        );
+        throw new UnsupportedAlgorithmError(`Unsupported encryption algorithm id '${encryptionAlgorithm.id}'`);
     }
 
-    // Re-use iv if passed
-    const iv = encryptionAlgorithm.iv ?
-        arrayBufferToBinaryString(encryptionAlgorithm.iv) : random.getBytesSync(ivBytes);
+    // Use OpenSSL legacy key derivation
+    const deriveKeyFn = createOpenSslKeyDeriver({
+        salt: iv.slice(0, 8),
+        keyLength: derivedKeyLength,
+    });
 
-    if (iv.length !== ivBytes) {
-        throw Object.assign(
-            new Error(`Expecting iv to have ${ivBytes} bytes`),
-            { code: 'INVALID_ENCRYPTION_PARAMETER' }
-        );
-    }
-
-    // Encrypt private key using OpenSSL legacy key derivation
-    const dk = pbe.opensslDeriveBytes(password, iv.substr(0, 8), dkLen);
-    const cipher = cipherFn(dk);
-
-    cipher.start(iv);
-    cipher.update(util.createBuffer(arrayBufferToBinaryString(pemBody)));
-    cipher.finish();
+    const derivedKey = deriveKeyFn(password);
+    const encryptedPemBody = encryptFn(derivedKey, pemBody);
 
     return {
-        dekInfo: {
-            algorithm: dekInfoAlgorithm,
-            parameters: arrayBufferToHexString(binaryStringToArrayBuffer(iv)).toUpperCase(),
+        pemHeaders: {
+            procType: { version: '4', type: 'ENCRYPTED' },
+            dekInfo: {
+                algorithm: dekInfoAlgorithm,
+                parameters: uint8ArrayToHexString(iv).toUpperCase(),
+            },
         },
-        pemBody: binaryStringToArrayBuffer(cipher.output.getBytes()),
+        pemBody: encryptedPemBody,
     };
+};
+
+export const maybeDecryptPemBody = (pem, password) => {
+    const encrypted = pem.procType && pem.procType.type === 'ENCRYPTED' && pem.dekInfo && pem.dekInfo.algorithm;
+
+    return encrypted ?
+        decryptPemBody(pem, password) :
+        { pemBody: binaryStringToUint8Array(pem.body), encryptionAlgorithm: null };
+};
+
+export const maybeEncryptPemBody = (pemBody, encryptionAlgorithm, password) => {
+    if (!password && !encryptionAlgorithm) {
+        return {
+            pemHeaders: null,
+            pemBody,
+        };
+    }
+
+    if (!password && encryptionAlgorithm) {
+        throw new MissingPasswordError('An encryption algorithm was specified but no password was set');
+    }
+
+    return encryptPemBody(pemBody, encryptionAlgorithm, password);
 };
