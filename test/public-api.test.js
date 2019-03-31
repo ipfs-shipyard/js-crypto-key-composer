@@ -77,7 +77,7 @@ describe('decomposePrivateKey', () => {
             decomposePrivateKey('', { format: ['pkcs1-der', 'pkcs1-pem'] });
         } catch (err) {
             expect(err.message).toBe('No format was able to recognize the input key');
-            expect(err.code).toBe('UNRECOGNIZED_INPUT_KEY');
+            expect(err.code).toBe('AGGREGATED_INVALID_INPUT_KEY');
             expect(err.errors['pkcs1-der'].code).toBe('INVALID_INPUT_KEY');
             expect(err.errors['pkcs1-pem'].code).toBe('INVALID_INPUT_KEY');
         }

@@ -1,6 +1,6 @@
 import { pkcs1Der, pkcs1Pem, pkcs8Der, pkcs8Pem } from './formats';
 import { validateInputKey, validateFormat, validateDecomposedKey } from './util/validator';
-import { UnrecognizedInputKeyError, InvalidInputKeyError } from './util/errors';
+import { AggregatedInvalidInputKeyError, InvalidInputKeyError } from './util/errors';
 
 const PRIVATE_FORMATS = {
     'pkcs1-pem': pkcs1Pem,
@@ -44,7 +44,7 @@ const decomposeKey = (supportedFormats, inputKey, options) => {
             decomposeKey = supportedFormats[format].decomposeKey(inputKey, options);
             break;
         } catch (err) {
-            // Skip If the error is a InvalidInputKeyError
+            // Skip if the error is a InvalidInputKeyError
             if (err instanceof InvalidInputKeyError) {
                 errors[format] = err;
                 continue;
@@ -56,7 +56,7 @@ const decomposeKey = (supportedFormats, inputKey, options) => {
     }
 
     if (!decomposeKey) {
-        throw new UnrecognizedInputKeyError(errors);
+        throw new AggregatedInvalidInputKeyError(errors);
     }
 
     return decomposeKey;

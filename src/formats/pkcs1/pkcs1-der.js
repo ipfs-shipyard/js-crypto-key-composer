@@ -1,31 +1,24 @@
-import { RSAPrivateKey } from './asn1-entities';
+import { decomposeRsaPrivateKey, composeRsaPrivateKey } from './keys';
 import KEY_TYPES from '../../util/key-types';
-import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
-import { uint8ArrayToInteger } from '../../util/binary';
-import { InvalidInputKeyError, UnsupportedAlgorithmError } from '../../util/errors';
+import { UnsupportedAlgorithmError, DecodeAsn1FailedError, InvalidInputKeyError } from '../../util/errors';
 
 export const decomposeKey = (rsaPrivateKeyAsn1) => {
-    let rsaPrivateKey;
+    let decomposedRsaKey;
 
     try {
-        rsaPrivateKey = decodeAsn1(rsaPrivateKeyAsn1, RSAPrivateKey);
+        decomposedRsaKey = decomposeRsaPrivateKey(rsaPrivateKeyAsn1);
     } catch (err) {
-        throw new InvalidInputKeyError(err.message, { originalError: err.originalError });
+        if (err instanceof DecodeAsn1FailedError) {
+            throw new InvalidInputKeyError(err.message, { originalError: err });
+        }
     }
 
-    const keyData = {
-        ...rsaPrivateKey,
-        // Versions and publicExponent small, so just transform them to numbers
-        version: uint8ArrayToInteger(rsaPrivateKey.version),
-        publicExponent: uint8ArrayToInteger(rsaPrivateKey.publicExponent),
-    };
+    const { keyAlgorithm, keyData } = decomposedRsaKey;
 
     return {
         format: 'pkcs1-der',
         encryptionAlgorithm: null,
-        keyAlgorithm: {
-            id: 'rsa-encryption',
-        },
+        keyAlgorithm,
         keyData,
     };
 };
@@ -41,5 +34,5 @@ export const composeKey = ({ keyAlgorithm, keyData, encryptionAlgorithm }) => {
         throw new UnsupportedAlgorithmError('PKCS1 keys do not support any kind of encryption');
     }
 
-    return encodeAsn1(keyData, RSAPrivateKey);
+    return composeRsaPrivateKey(keyData);
 };

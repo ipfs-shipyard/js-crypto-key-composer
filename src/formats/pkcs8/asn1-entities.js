@@ -15,8 +15,6 @@ const objIdValues = new Proxy({}, {
     },
 });
 
-export * from '../pkcs1/asn1-entities';
-
 export const AlgorithmIdentifier = asn1.define('AlgorithmIdentifier', function () {
     this.seq().obj(
         this.key('id').objid(objIdValues),

@@ -1,37 +1,37 @@
 import { OIDS, FLIPPED_OIDS } from './oids';
-import { RSAPrivateKey, CurvePrivateKey } from './asn1-entities';
+import { CurvePrivateKey } from './asn1-entities';
+import { decomposeRsaPrivateKey, composeRsaPrivateKey } from '../pkcs1/keys';
 import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
-import { uint8ArrayToInteger, uint8ArrayToHexString, hexStringToUint8Array } from '../../util/binary';
+import { uint8ArrayToHexString, hexStringToUint8Array } from '../../util/binary';
 import { UnsupportedAlgorithmError } from '../../util/errors';
 import KEY_TYPES from '../../util/key-types';
 
 const decomposeRsaPrivateKeyInfo = (privateKeyInfo) => {
-    const { privateKeyAlgorithm, privateKey } = privateKeyInfo;
-    const rsaPrivateKey = decodeAsn1(privateKey, RSAPrivateKey);
+    const { privateKeyAlgorithm, privateKey: privateKeyAsn1 } = privateKeyInfo;
+
+    const { keyData } = decomposeRsaPrivateKey(privateKeyAsn1);
 
     return {
         keyAlgorithm: {
             id: OIDS[privateKeyAlgorithm.id],
             parameters: uint8ArrayToHexString(privateKeyAlgorithm.parameters) === '0500' ? null : privateKeyAlgorithm.parameters,
         },
-        keyData: {
-            ...rsaPrivateKey,
-            // Versions and publicExponent small, so just transform them to numbers
-            version: uint8ArrayToInteger(rsaPrivateKey.version),
-            publicExponent: uint8ArrayToInteger(rsaPrivateKey.publicExponent),
-        },
+        keyData,
     };
 };
 
-const composeRsaPrivateKeyInfo = (keyAlgorithm, keyData) => ({
-    version: 0,
-    privateKeyAlgorithm: {
-        id: FLIPPED_OIDS[keyAlgorithm.id],
-        parameters: keyAlgorithm.parameters || hexStringToUint8Array('0500'),
-    },
-    privateKey: encodeAsn1(keyData, RSAPrivateKey),
+const composeRsaPrivateKeyInfo = (keyAlgorithm, keyData) => {
+    const rsaPrivateKeyAsn1 = composeRsaPrivateKey(keyData);
 
-});
+    return {
+        version: 0,
+        privateKeyAlgorithm: {
+            id: FLIPPED_OIDS[keyAlgorithm.id],
+            parameters: keyAlgorithm.parameters || hexStringToUint8Array('0500'),
+        },
+        privateKey: rsaPrivateKeyAsn1,
+    };
+};
 
 const decomposeEd25519PrivateKeyInfo = (privateKeyInfo) => {
     const { privateKeyAlgorithm, privateKey } = privateKeyInfo;
