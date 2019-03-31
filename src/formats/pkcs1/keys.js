@@ -1,32 +1,31 @@
 import { RSAPrivateKey } from './asn1-entities';
 import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
 import { uint8ArrayToInteger } from '../../util/binary';
-import { InvalidKeyDataError } from '../../util/errors';
 
 export const decomposeRsaPrivateKey = (rsaPrivateKeyAsn1) => {
-    const rsaPrivateKey = decodeAsn1(rsaPrivateKeyAsn1, RSAPrivateKey);
+    const { version, ...keyData } = decodeAsn1(rsaPrivateKeyAsn1, RSAPrivateKey);
 
     return {
         keyAlgorithm: {
             id: 'rsa-encryption',
         },
         keyData: {
-            ...rsaPrivateKey,
-            // Versions and publicExponent small, so just transform them to numbers
-            version: uint8ArrayToInteger(rsaPrivateKey.version),
-            publicExponent: uint8ArrayToInteger(rsaPrivateKey.publicExponent),
+            ...keyData,
+            // The publicExponent is small, so just transform them to numbers
+            publicExponent: uint8ArrayToInteger(keyData.publicExponent),
         },
     };
 };
 
 export const composeRsaPrivateKey = (rsaKeyData) => {
-    if (rsaKeyData.version < 0 || rsaKeyData.version > 2) {
-        throw new InvalidKeyDataError('Version must be 0 or 1');
-    }
+    const otherPrimeInfos = rsaKeyData.otherPrimeInfos;
+    const hasMultiplePrimes = otherPrimeInfos && otherPrimeInfos.length > 0;
 
-    if (rsaKeyData.otherPrimeInfos && rsaKeyData.version < 1) {
-        throw new InvalidKeyDataError('Version must be set to 1 when defining \'otherPrimeInfos\'');
-    }
+    const rsaPrivateKey = {
+        ...rsaKeyData,
+        version: hasMultiplePrimes ? 1 : 0,
+        otherPrimeInfos: hasMultiplePrimes ? otherPrimeInfos : undefined,
+    };
 
-    return encodeAsn1(rsaKeyData, RSAPrivateKey);
+    return encodeAsn1(rsaPrivateKey, RSAPrivateKey);
 };

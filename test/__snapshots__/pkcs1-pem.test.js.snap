@@ -1193,7 +1193,6 @@ Object {
       193,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -1820,7 +1819,6 @@ Object {
       49,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -3026,7 +3024,6 @@ Object {
       1,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -4231,7 +4228,6 @@ Object {
       9,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -5427,7 +5423,6 @@ Object {
       209,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -6624,7 +6619,6 @@ Object {
       209,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -7821,7 +7815,6 @@ Object {
       173,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -9018,7 +9011,6 @@ Object {
       129,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -10215,7 +10207,6 @@ Object {
       129,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -11402,7 +11393,6 @@ Object {
       205,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -12589,7 +12579,6 @@ Object {
       205,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -13776,7 +13765,6 @@ Object {
       205,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -14963,7 +14951,6 @@ Object {
       205,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;

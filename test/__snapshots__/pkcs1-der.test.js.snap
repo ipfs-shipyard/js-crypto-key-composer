@@ -1180,7 +1180,6 @@ Object {
       229,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -2365,7 +2364,6 @@ Object {
       229,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -3550,7 +3548,6 @@ Object {
       229,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;
@@ -4789,7 +4786,6 @@ Object {
       33,
     ],
     "publicExponent": 65537,
-    "version": 1,
   },
 }
 `;
@@ -7275,7 +7271,6 @@ Object {
       65,
     ],
     "publicExponent": 65537,
-    "version": 1,
   },
 }
 `;
@@ -8460,7 +8455,6 @@ Object {
       229,
     ],
     "publicExponent": 65537,
-    "version": 0,
   },
 }
 `;

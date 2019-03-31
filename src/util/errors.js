@@ -26,7 +26,12 @@ export class InvalidInputKeyError extends BaseError {
 
 export class AggregatedInvalidInputKeyError extends BaseError {
     constructor(errors, props) {
-        super('No format was able to recognize the input key', 'AggregatedInvalidInputKeyError', 'AGGREGATED_INVALID_INPUT_KEY', { ...props, errors });
+        super(
+            'No format was able to recognize the input key',
+            'AggregatedInvalidInputKeyError',
+            'AGGREGATED_INVALID_INPUT_KEY',
+            { ...props, errors }
+        );
     }
 }
 
@@ -39,12 +44,6 @@ export class UnsupportedFormatError extends BaseError {
 export class UnsupportedAlgorithmError extends BaseError {
     constructor(message, props) {
         super(message, 'UnsupportedAlgorithmError', 'UNSUPPORTED_ALGORITHM', props);
-    }
-}
-
-export class InvalidKeyDataError extends BaseError {
-    constructor(message, props) {
-        super(message, 'InvalidKeyDataError', 'INVALID_KEY_DATA', props);
     }
 }
 
