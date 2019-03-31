@@ -31,28 +31,66 @@ Moreover, some of this library's dependencies use the native Node [Buffer](https
 
 ### decomposePrivateKey(input, [options])
 
-Parses a key, extracting information such as its format, key algorithm and encryption algorithm.
+Parses a key, extracting information such as its format, key algorithm, key  data and encryption algorithm.
 
 ```js
 import { decomposePrivateKey } from 'crypto-key-parser';
 
-const myPemKey = '----------'
+const myPemKey = `
+-----BEGIN RSA PRIVATE KEY-----
+ACTUAL KEY BASE64 HERE
+-----END RSA PRIVATE KEY-----
+`
 
 const myDecomposedKey = decomposePrivateKey(myPemKey)
 
 // {
 //     format: 'pkcs1-pem',
 //     keyAlgorithm: {
-//         type: 'rsaEncryption'
+//         type: 'rsa-encryption'
+//         parameters: Uint8Array([05, 00]),
+//     },
+//     keyData: {
+//         version: 0,
+//         publicExponent: 65537,
+//         prime1: Uint8Array(...),
 //         // ...
 //     },
-//     keyData,
-//     encryptionAlgorithm: {
-//         type: 'PBES2',
-//         // ...
-//     }
+//     encryptionAlgorithm: null
 // }
 ```
+
+Returns the decomposed key, which is an object with the following properties:
+
+<details><summary><strong>format</strong></summary>
+   
+The format of the key.
+
+See [Formats]() for a list of all supported formats.
+</details>
+<details><summary><strong>keyAlgorithm</strong></summary>
+   
+The key algorithm object containing its id and parameters.
+
+See [Key Algorithms]() for a list of all supported key algorithms.
+
+Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `rsaes-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getKeyInfo(keyAlgorithm`]() to extract human friendly information about the key.
+</details>
+<details><summary><strong>keyData</strong></summary>
+   
+The key data object, containing the interpreted private key itself.
+
+The data inside this object varies per key type. As an example, for RSA keys, this object contains `prime1`, `prime2`, `exponent1`, `exponent2`, and other properties that compose the key.
+
+See [Key Data]() for a list of examples for all key types.
+</details>
+<details><summary><strong>encryptionAlgorithm</strong></summary>
+  
+The encryption algorithm used to decrypt the key or `null` if it was unencrypted.
+
+See [Encryption Algorithms]() for a list all the supported encryption algorithms.
+</details>
+
 
 Available options:
 
@@ -60,7 +98,7 @@ Available options:
 | name | type | default | description |
 | ---- | ---- | ------- | ----------- |
 | format | string/Array | *all formats*  | Limit the parsing to one or more formats |
-| password | string | | The password to use if the key is encrypted |
+| password | string | | The password to use to decrypt the key |
 
 
 ### composePrivateKey(decomposedKey, [options])
@@ -71,7 +109,10 @@ Composes a private key from its decomposed parts.
 import { composePrivateKey } from 'crypto-key-parser';
 
 const myPrivateKey = composePrivateKey({
-    // ...
+    format: 'pkcs1-pem',
+    keyAlgorithm: 'rsa',
+    keyData: { ...},
+    encryptionAlgorithm: 'aes128-cbc'
 });
 ```
 
