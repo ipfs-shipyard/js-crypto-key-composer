@@ -11,6 +11,8 @@ export const decomposeKey = (rsaPrivateKeyAsn1) => {
         if (err instanceof DecodeAsn1FailedError) {
             throw new InvalidInputKeyError(err.message, { originalError: err });
         }
+
+        throw err;
     }
 
     const { keyAlgorithm, keyData } = decomposedRsaKey;

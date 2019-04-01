@@ -30,40 +30,56 @@ export const validateFormat = (format, supportedFormats) => {
     return format;
 };
 
-export const validateDecomposedKey = (decomposedKey, supportedFormats) => {
-    if (!decomposedKey || !isPlainObject(decomposedKey)) {
-        throw new UnexpectedTypeError('Expecting decomposed key to be an object');
-    }
-
-    const { format, keyAlgorithm, encryptionAlgorithm } = decomposedKey;
-
-    decomposedKey = { ...decomposedKey };
-    decomposedKey.format = validateFormat(format, supportedFormats);
-    decomposedKey.keyAlgorithm = validateAlgorithmIdentifier(KEY_ALIASES[keyAlgorithm] || keyAlgorithm, 'key');
-
-    if (!isPlainObject(decomposedKey.keyData)) {
-        throw new UnexpectedTypeError('Expecting key data to be an object');
-    }
-
-    decomposedKey.encryptionAlgorithm = encryptionAlgorithm ? validateAlgorithmIdentifier(encryptionAlgorithm, 'encryption') : null;
-
-    return decomposedKey;
-};
-
-export const validateAlgorithmIdentifier = (algorithmIdentifier, errorContext) => {
+const validateAlgorithmIdentifier = (algorithmIdentifier, errorContext) => {
     if (typeof algorithmIdentifier === 'string') {
         algorithmIdentifier = { id: algorithmIdentifier };
     }
 
     if (!isPlainObject(algorithmIdentifier)) {
-        throw new UnexpectedTypeError(`Expecting ${errorContext} algorithm to be an object`);
+        throw new UnexpectedTypeError(`Expecting ${errorContext} to be an object`);
     }
 
-    algorithmIdentifier = { ...algorithmIdentifier };
-
     if (typeof algorithmIdentifier.id !== 'string') {
-        throw new UnexpectedTypeError(`Expecting ${errorContext} algorithm id to be a string`);
+        throw new UnexpectedTypeError(`Expecting ${errorContext} id to be a string`);
     }
 
     return algorithmIdentifier;
+};
+
+export const validateDecomposedKey = (decomposedKey, supportedFormats) => {
+    if (!decomposedKey || !isPlainObject(decomposedKey)) {
+        throw new UnexpectedTypeError('Expecting decomposed key to be an object');
+    }
+
+    const keyAlgorithm = KEY_ALIASES[decomposedKey.keyAlgorithm] || decomposedKey.keyAlgorithm;
+
+    decomposedKey = { ...decomposedKey };
+    decomposedKey.format = validateFormat(decomposedKey.format, supportedFormats);
+
+    decomposedKey.keyAlgorithm = validateAlgorithmIdentifier(keyAlgorithm, 'key algorithm');
+
+    if (!isPlainObject(decomposedKey.keyData)) {
+        throw new UnexpectedTypeError('Expecting key data to be an object');
+    }
+
+    if (decomposedKey.encryptionAlgorithm && !isPlainObject(decomposedKey.encryptionAlgorithm)) {
+        throw new UnexpectedTypeError('Expecting encryption algorithm to be an object');
+    }
+
+    return decomposedKey;
+};
+
+export const validateEncryptionAlgorithm = (encryptionAlgorithm, defaultKeyDerivationFunc, defaultEncryptionScheme) => {
+    encryptionAlgorithm = encryptionAlgorithm || {};
+
+    return {
+        keyDerivationFunc: validateAlgorithmIdentifier(
+            encryptionAlgorithm.keyDerivationFunc || defaultKeyDerivationFunc,
+            'key derivation func'
+        ),
+        encryptionScheme: validateAlgorithmIdentifier(
+            encryptionAlgorithm.encryptionScheme || defaultEncryptionScheme,
+            'encryption scheme'
+        ),
+    };
 };

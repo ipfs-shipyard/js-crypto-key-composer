@@ -317,13 +317,13 @@ describe('composePrivateKey', () => {
                     ...decomposedKey,
                     encryptionAlgorithm: {
                         ...decomposedKey.encryptionAlgorithm,
-                        encryptionScheme: { id: 'rc2-cbc', bits: 1024 },
+                        encryptionScheme: { id: 'rc2-cbc', bits: 1 },
                     },
                 }, {
                     password,
                 });
             } catch (err) {
-                expect(err.message).toBe('Unsupported RC2 bits parameter with value \'1024\'');
+                expect(err.message).toBe('Unsupported RC2 bits parameter with value \'1\'');
                 expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
             }
         });
@@ -334,7 +334,7 @@ describe('composePrivateKey', () => {
                 ...decomposedKey,
                 encryptionAlgorithm: {
                     ...decomposedKey.encryptionAlgorithm,
-                    encryptionScheme: { id: 'rc2-cbc' },
+                    encryptionScheme: 'rc2-cbc',
                 },
             }, {
                 password,
@@ -364,7 +364,6 @@ describe('composePrivateKey', () => {
             const composedKey = composePrivateKey(decomposedKey, { password });
             const recomposedKey = decomposePrivateKey(composedKey, { format: 'pkcs8-der', password });
 
-            expect(recomposedKey.encryptionAlgorithm.id).toBe('pbes2');
             expect(recomposedKey.encryptionAlgorithm.keyDerivationFunc.id).toBe('pbkdf2');
             expect(recomposedKey.encryptionAlgorithm.encryptionScheme.id).toBe('aes256-cbc');
         });
@@ -397,7 +396,7 @@ describe('composePrivateKey', () => {
                     password,
                 });
             } catch (err) {
-                expect(err.message).toBe('Unsupported prf algorithm id \'foo\'');
+                expect(err.message).toBe('Unsupported PBKDF2 prf id \'foo\'');
                 expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
             }
         });
@@ -412,7 +411,7 @@ describe('composePrivateKey', () => {
                     ...decomposedKey,
                     encryptionAlgorithm: {
                         ...decomposedKey.encryptionAlgorithm,
-                        encryptionScheme: { id: 'foo' },
+                        encryptionScheme: 'foo',
                     },
                 }, {
                     password,
@@ -454,24 +453,6 @@ describe('composePrivateKey', () => {
             } catch (err) {
                 expect(err.message).toBe('An encryption algorithm was specified but no password was set');
                 expect(err.code).toBe('MISSING_PASSWORD');
-            }
-        });
-
-        it('should fail if the encryption algorithm is not supported', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-1'], { format: 'pkcs8-der' });
-
-            expect.assertions(2);
-
-            try {
-                composePrivateKey({
-                    ...decomposedKey,
-                    encryptionAlgorithm: { id: 'foo' },
-                }, {
-                    password,
-                });
-            } catch (err) {
-                expect(err.message).toBe('Unsupported encryption algorithm id \'foo\'');
-                expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
             }
         });
     });

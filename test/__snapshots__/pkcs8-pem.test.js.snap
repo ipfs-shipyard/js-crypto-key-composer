@@ -4756,7 +4756,6 @@ Object {
         240,
       ],
     },
-    "id": "pbes2",
     "keyDerivationFunc": Object {
       "id": "pbkdf2",
       "iterationCount": 2048,

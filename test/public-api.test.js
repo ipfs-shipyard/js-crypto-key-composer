@@ -153,7 +153,7 @@ describe('composeKey', () => {
         try {
             composePrivateKey({
                 format: 'pkcs8-der',
-                keyAlgorithm: { id: 'rsaEncryption' },
+                keyAlgorithm: { id: 'rsa-encryption' },
                 keyData: [],
             });
         } catch (err) {
@@ -163,15 +163,15 @@ describe('composeKey', () => {
     });
 
     it('should fail if encryption algorithm is invalid', () => {
-        expect.assertions(4);
+        const decomposedKey = decomposePrivateKey(KEYS['rsa-1'], { format: 'pkcs1-pem' });
+
+        expect.assertions(6);
 
         try {
             composePrivateKey({
-                format: 'pkcs8-der',
-                keyAlgorithm: { id: 'rsaEncryption' },
-                keyData: {},
+                ...decomposedKey,
                 encryptionAlgorithm: [],
-            });
+            }, { password: 'password' });
         } catch (err) {
             expect(err.message).toBe('Expecting encryption algorithm to be an object');
             expect(err.code).toBe('UNEXPECTED_TYPE');
@@ -179,13 +179,25 @@ describe('composeKey', () => {
 
         try {
             composePrivateKey({
-                format: 'pkcs8-der',
-                keyAlgorithm: { id: 'rsaEncryption' },
-                keyData: {},
-                encryptionAlgorithm: { id: 2 },
-            });
+                ...decomposedKey,
+                encryptionAlgorithm: {
+                    keyDerivationFunc: 2,
+                },
+            }, { password: 'password' });
         } catch (err) {
-            expect(err.message).toBe('Expecting encryption algorithm id to be a string');
+            expect(err.message).toBe('Expecting key derivation func to be an object');
+            expect(err.code).toBe('UNEXPECTED_TYPE');
+        }
+
+        try {
+            composePrivateKey({
+                ...decomposedKey,
+                encryptionAlgorithm: {
+                    encryptionScheme: 2,
+                },
+            }, { password: 'password' });
+        } catch (err) {
+            expect(err.message).toBe('Expecting encryption scheme to be an object');
             expect(err.code).toBe('UNEXPECTED_TYPE');
         }
     });

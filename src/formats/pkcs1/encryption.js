@@ -1,191 +1,117 @@
-import {
-    createOpenSslKeyDeriver,
-    createAesDecrypter, createAesEncrypter,
-    createDesDecrypter, createDesEncrypter,
-    createRc2Decrypter, createRc2Encrypter,
-} from '../../util/pbe';
+import { decryptWithPassword, encryptWithPassword } from '../../util/pbe';
 import { binaryStringToUint8Array, hexStringToUint8Array, uint8ArrayToHexString } from '../../util/binary';
-import { validateAlgorithmIdentifier } from '../../util/validator';
+import { validateEncryptionAlgorithm } from '../../util/validator';
 import { UnsupportedAlgorithmError, MissingPasswordError } from '../../util/errors';
-import randomBytes from '../../util/random';
 
 const decryptPemBody = (pem, password) => {
-    if (!password) {
-        throw new MissingPasswordError('Please specify the password to decrypt the key');
-    }
+    const keyDerivationFunc = { id: 'openssl-derive-bytes' };
+    const encryptionScheme = { iv: hexStringToUint8Array(pem.dekInfo.parameters) };
 
-    let derivedKeyLength;
-    let decryptFn;
+    const dekInfoAlgorithm = pem.dekInfo.algorithm;
 
-    let encryptionAlgorithmId;
-    const encryptionAlgorithmParams = { iv: hexStringToUint8Array(pem.dekInfo.parameters) };
-
-    switch (pem.dekInfo.algorithm) {
+    switch (dekInfoAlgorithm) {
     case 'AES-128-CBC':
-        encryptionAlgorithmId = 'aes128-cbc';
-        derivedKeyLength = 16;
-        decryptFn = createAesDecrypter(encryptionAlgorithmParams);
-        break;
     case 'AES-192-CBC':
-        encryptionAlgorithmId = 'aes192-cbc';
-        derivedKeyLength = 24;
-        decryptFn = createAesDecrypter(encryptionAlgorithmParams);
-        break;
     case 'AES-256-CBC':
-        encryptionAlgorithmId = 'aes256-cbc';
-        derivedKeyLength = 32;
-        decryptFn = createAesDecrypter(encryptionAlgorithmParams);
+        encryptionScheme.id = dekInfoAlgorithm.replace('-', '').toLowerCase();
         break;
     case 'RC2-40-CBC':
-        encryptionAlgorithmId = 'rc2-cbc';
-        encryptionAlgorithmParams.bits = 40;
-        derivedKeyLength = 5;
-        decryptFn = createRc2Decrypter(encryptionAlgorithmParams);
-        break;
     case 'RC2-64-CBC':
-        encryptionAlgorithmId = 'rc2-cbc';
-        encryptionAlgorithmParams.bits = 64;
-        derivedKeyLength = 8;
-        decryptFn = createRc2Decrypter(encryptionAlgorithmParams);
-        break;
     case 'RC2-128-CBC':
     case 'RC2-CBC':
-        encryptionAlgorithmId = 'rc2-cbc';
-        encryptionAlgorithmParams.bits = 128;
-        derivedKeyLength = 16;
-        decryptFn = createRc2Decrypter(encryptionAlgorithmParams);
+        encryptionScheme.id = 'rc2-cbc';
+        encryptionScheme.bits = Number((dekInfoAlgorithm.match(/-(\d+)-/) || [])[1]) || 128;
         break;
     case 'DES-CBC':
-        encryptionAlgorithmId = 'des-cbc';
-        derivedKeyLength = 8;
-        decryptFn = createDesDecrypter(encryptionAlgorithmParams);
-        break;
     case 'DES-EDE3-CBC':
-        encryptionAlgorithmId = 'des-ede3-cbc';
-        derivedKeyLength = 24;
-        decryptFn = createDesDecrypter(encryptionAlgorithmParams);
+        encryptionScheme.id = dekInfoAlgorithm.toLowerCase();
         break;
     default:
-        throw new UnsupportedAlgorithmError(`Unsupported DEK-INFO algorithm '${pem.dekInfo.algorithm}'`);
+        throw new UnsupportedAlgorithmError(`Unsupported DEK-INFO algorithm '${dekInfoAlgorithm}'`);
     }
 
-    // Use OpenSSL legacy key derivation
-    const deriveKeyFn = createOpenSslKeyDeriver({
-        salt: encryptionAlgorithmParams.iv.slice(0, 8),
-        keyLength: derivedKeyLength,
-    });
+    const encryptionAlgorithm = {
+        keyDerivationFunc,
+        encryptionScheme,
+    };
 
-    const derivedKey = deriveKeyFn(password);
-    const decryptedPemBody = decryptFn(derivedKey, binaryStringToUint8Array(pem.body));
+    const decryptedPemBody = decryptWithPassword(binaryStringToUint8Array(pem.body), encryptionAlgorithm, password);
 
     return {
-        encryptionAlgorithm: {
-            id: encryptionAlgorithmId,
-            ...encryptionAlgorithmParams,
-        },
+        encryptionAlgorithm,
         pemBody: decryptedPemBody,
     };
 };
 
 const encryptPemBody = (pemBody, encryptionAlgorithm, password) => {
-    encryptionAlgorithm = validateAlgorithmIdentifier(encryptionAlgorithm || 'aes256-cbc', 'encryption');
+    encryptionAlgorithm = validateEncryptionAlgorithm(encryptionAlgorithm, 'openssl-derive-bytes', 'aes256-cbc');
 
-    let derivedKeyLength;
-    let iv;
-    let encryptFn;
+    const { keyDerivationFunc, encryptionScheme } = encryptionAlgorithm;
+
+    if (keyDerivationFunc.id !== 'openssl-derive-bytes') {
+        throw new UnsupportedAlgorithmError('PKCS1 PEM keys only support \'openssl-derive-bytes\' as the key derivation func');
+    }
 
     let dekInfoAlgorithm;
 
-    switch (encryptionAlgorithm.id) {
+    switch (encryptionScheme.id) {
     case 'aes128-cbc':
-        dekInfoAlgorithm = 'AES-128-CBC';
-        derivedKeyLength = 16;
-        iv = encryptionAlgorithm.iv || randomBytes(16);
-        encryptFn = createAesEncrypter({ iv });
-        break;
     case 'aes192-cbc':
-        dekInfoAlgorithm = 'AES-192-CBC';
-        derivedKeyLength = 24;
-        iv = encryptionAlgorithm.iv || randomBytes(16);
-        encryptFn = createAesEncrypter({ iv });
-        break;
     case 'aes256-cbc':
-        dekInfoAlgorithm = 'AES-256-CBC';
-        derivedKeyLength = 32;
-        iv = encryptionAlgorithm.iv || randomBytes(16);
-        encryptFn = createAesEncrypter({ iv });
+        dekInfoAlgorithm = encryptionScheme.id.replace('aes', 'aes-').toUpperCase();
         break;
-    case 'rc2-cbc': {
-        const bits = encryptionAlgorithm.bits || 128;
+    case 'rc2-cbc':
+        encryptionScheme.bits = encryptionScheme.bits || 128;
 
-        iv = encryptionAlgorithm.iv || randomBytes(8);
-
-        // RC2-CBCParameter encoding of the "effective key bits" as defined in:
-        // https://tools.ietf.org/html/rfc2898#appendix-B.2.3
-        switch (bits) {
+        switch (encryptionScheme.bits) {
         case 40:
             dekInfoAlgorithm = 'RC2-40-CBC';
-            derivedKeyLength = 5;
             break;
         case 64:
             dekInfoAlgorithm = 'RC2-64-CBC';
-            derivedKeyLength = 8;
             break;
         case 128:
             dekInfoAlgorithm = 'RC2-CBC';
-            derivedKeyLength = 16;
             break;
         default:
-            throw new UnsupportedAlgorithmError(`Unsupported RC2 bits parameter with value '${bits}'`);
+            throw new UnsupportedAlgorithmError(`Unsupported RC2 bits parameter with value '${encryptionScheme.bits}'`);
         }
 
-        encryptFn = createRc2Encrypter({ iv, bits });
-
         break;
-    }
     case 'des-cbc':
-        dekInfoAlgorithm = 'DES-CBC';
-        derivedKeyLength = 8;
-        iv = encryptionAlgorithm.iv || randomBytes(8);
-        encryptFn = createDesEncrypter({ iv });
-        break;
     case 'des-ede3-cbc':
-        dekInfoAlgorithm = 'DES-EDE3-CBC';
-        derivedKeyLength = 24;
-        iv = encryptionAlgorithm.iv || randomBytes(8);
-        encryptFn = createDesEncrypter({ iv });
+        dekInfoAlgorithm = encryptionScheme.id.toUpperCase();
         break;
     default:
-        throw new UnsupportedAlgorithmError(`Unsupported encryption algorithm id '${encryptionAlgorithm.id}'`);
+        throw new UnsupportedAlgorithmError(`Unsupported encryption scheme id '${encryptionScheme.id}'`);
     }
 
-    // Use OpenSSL legacy key derivation
-    const deriveKeyFn = createOpenSslKeyDeriver({
-        salt: iv.slice(0, 8),
-        keyLength: derivedKeyLength,
-    });
-
-    const derivedKey = deriveKeyFn(password);
-    const encryptedPemBody = encryptFn(derivedKey, pemBody);
+    const { encryptedData, effectiveEncryptionAlgorithm } = encryptWithPassword(pemBody, encryptionAlgorithm, password);
 
     return {
         pemHeaders: {
             procType: { version: '4', type: 'ENCRYPTED' },
             dekInfo: {
                 algorithm: dekInfoAlgorithm,
-                parameters: uint8ArrayToHexString(iv).toUpperCase(),
+                parameters: uint8ArrayToHexString(effectiveEncryptionAlgorithm.encryptionScheme.iv).toUpperCase(),
             },
         },
-        pemBody: encryptedPemBody,
+        pemBody: encryptedData,
     };
 };
 
 export const maybeDecryptPemBody = (pem, password) => {
     const encrypted = pem.procType && pem.procType.type === 'ENCRYPTED' && pem.dekInfo && pem.dekInfo.algorithm;
 
-    return encrypted ?
-        decryptPemBody(pem, password) :
-        { pemBody: binaryStringToUint8Array(pem.body), encryptionAlgorithm: null };
+    if (!encrypted) {
+        return { pemBody: binaryStringToUint8Array(pem.body), encryptionAlgorithm: null };
+    }
+
+    if (!password) {
+        throw new MissingPasswordError('Please specify the password to decrypt the key');
+    }
+
+    return decryptPemBody(pem, password);
 };
 
 export const maybeEncryptPemBody = (pemBody, encryptionAlgorithm, password) => {

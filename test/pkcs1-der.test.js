@@ -84,7 +84,7 @@ describe('composePrivateKey', () => {
         try {
             composePrivateKey({
                 format: 'pkcs1-der',
-                encryptionAlgorithm: { id: 'foo' },
+                encryptionAlgorithm: {},
                 keyAlgorithm: { id: 'rsa-encryption' },
                 keyData: {},
             });

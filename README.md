@@ -47,11 +47,9 @@ const myDecomposedKey = decomposePrivateKey(myPemKey)
 // {
 //     format: 'pkcs1-pem',
 //     keyAlgorithm: {
-//         type: 'rsa-encryption'
-//         parameters: Uint8Array([05, 00]),
+//         id: 'rsa-encryption'
 //     },
 //     keyData: {
-//         version: 0,
 //         publicExponent: 65537,
 //         prime1: Uint8Array(...),
 //         // ...

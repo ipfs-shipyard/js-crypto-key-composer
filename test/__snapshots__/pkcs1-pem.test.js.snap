@@ -3,17 +3,22 @@
 exports[`decomposePrivateKey decryption should decompose a RSA key encrypted with DES-EDE3-CBC 1`] = `
 Object {
   "encryptionAlgorithm": Object {
-    "id": "des-ede3-cbc",
-    "iv": Uint8Array [
-      63,
-      243,
-      156,
-      151,
-      249,
-      232,
-      28,
-      175,
-    ],
+    "encryptionScheme": Object {
+      "id": "des-ede3-cbc",
+      "iv": Uint8Array [
+        63,
+        243,
+        156,
+        151,
+        249,
+        232,
+        28,
+        175,
+      ],
+    },
+    "keyDerivationFunc": Object {
+      "id": "openssl-derive-bytes",
+    },
   },
   "format": "pkcs1-pem",
   "keyAlgorithm": Object {
@@ -1200,25 +1205,30 @@ Object {
 exports[`decomposePrivateKey decryption should decompose a RSA key encrypted with aes128 1`] = `
 Object {
   "encryptionAlgorithm": Object {
-    "id": "aes128-cbc",
-    "iv": Uint8Array [
-      116,
-      154,
-      119,
-      138,
-      204,
-      49,
-      210,
-      194,
-      23,
-      40,
-      61,
-      148,
-      159,
-      234,
-      45,
-      135,
-    ],
+    "encryptionScheme": Object {
+      "id": "aes128-cbc",
+      "iv": Uint8Array [
+        116,
+        154,
+        119,
+        138,
+        204,
+        49,
+        210,
+        194,
+        23,
+        40,
+        61,
+        148,
+        159,
+        234,
+        45,
+        135,
+      ],
+    },
+    "keyDerivationFunc": Object {
+      "id": "openssl-derive-bytes",
+    },
   },
   "format": "pkcs1-pem",
   "keyAlgorithm": Object {
@@ -1826,25 +1836,30 @@ Object {
 exports[`decomposePrivateKey decryption should decompose a RSA key encrypted with aes192 1`] = `
 Object {
   "encryptionAlgorithm": Object {
-    "id": "aes192-cbc",
-    "iv": Uint8Array [
-      145,
-      138,
-      70,
-      81,
-      34,
-      221,
-      115,
-      167,
-      107,
-      75,
-      52,
-      122,
-      132,
-      214,
-      49,
-      94,
-    ],
+    "encryptionScheme": Object {
+      "id": "aes192-cbc",
+      "iv": Uint8Array [
+        145,
+        138,
+        70,
+        81,
+        34,
+        221,
+        115,
+        167,
+        107,
+        75,
+        52,
+        122,
+        132,
+        214,
+        49,
+        94,
+      ],
+    },
+    "keyDerivationFunc": Object {
+      "id": "openssl-derive-bytes",
+    },
   },
   "format": "pkcs1-pem",
   "keyAlgorithm": Object {
@@ -3031,25 +3046,30 @@ Object {
 exports[`decomposePrivateKey decryption should decompose a RSA key encrypted with aes256 1`] = `
 Object {
   "encryptionAlgorithm": Object {
-    "id": "aes256-cbc",
-    "iv": Uint8Array [
-      67,
-      215,
-      158,
-      183,
-      188,
-      147,
-      226,
-      76,
-      97,
-      143,
-      155,
-      38,
-      40,
-      18,
-      230,
-      253,
-    ],
+    "encryptionScheme": Object {
+      "id": "aes256-cbc",
+      "iv": Uint8Array [
+        67,
+        215,
+        158,
+        183,
+        188,
+        147,
+        226,
+        76,
+        97,
+        143,
+        155,
+        38,
+        40,
+        18,
+        230,
+        253,
+      ],
+    },
+    "keyDerivationFunc": Object {
+      "id": "openssl-derive-bytes",
+    },
   },
   "format": "pkcs1-pem",
   "keyAlgorithm": Object {
@@ -4235,17 +4255,22 @@ Object {
 exports[`decomposePrivateKey decryption should decompose a RSA key encrypted with desCBC 1`] = `
 Object {
   "encryptionAlgorithm": Object {
-    "id": "des-cbc",
-    "iv": Uint8Array [
-      234,
-      1,
-      157,
-      144,
-      2,
-      93,
-      178,
-      225,
-    ],
+    "encryptionScheme": Object {
+      "id": "des-cbc",
+      "iv": Uint8Array [
+        234,
+        1,
+        157,
+        144,
+        2,
+        93,
+        178,
+        225,
+      ],
+    },
+    "keyDerivationFunc": Object {
+      "id": "openssl-derive-bytes",
+    },
   },
   "format": "pkcs1-pem",
   "keyAlgorithm": Object {
@@ -5430,18 +5455,23 @@ Object {
 exports[`decomposePrivateKey decryption should decompose a RSA key encrypted with rc2 40 bits 1`] = `
 Object {
   "encryptionAlgorithm": Object {
-    "bits": 40,
-    "id": "rc2-cbc",
-    "iv": Uint8Array [
-      206,
-      199,
-      231,
-      142,
-      75,
-      120,
-      135,
-      158,
-    ],
+    "encryptionScheme": Object {
+      "bits": 40,
+      "id": "rc2-cbc",
+      "iv": Uint8Array [
+        206,
+        199,
+        231,
+        142,
+        75,
+        120,
+        135,
+        158,
+      ],
+    },
+    "keyDerivationFunc": Object {
+      "id": "openssl-derive-bytes",
+    },
   },
   "format": "pkcs1-pem",
   "keyAlgorithm": Object {
@@ -6626,18 +6656,23 @@ Object {
 exports[`decomposePrivateKey decryption should decompose a RSA key encrypted with rc2 64 bits 1`] = `
 Object {
   "encryptionAlgorithm": Object {
-    "bits": 64,
-    "id": "rc2-cbc",
-    "iv": Uint8Array [
-      140,
-      221,
-      249,
-      176,
-      150,
-      84,
-      178,
-      66,
-    ],
+    "encryptionScheme": Object {
+      "bits": 64,
+      "id": "rc2-cbc",
+      "iv": Uint8Array [
+        140,
+        221,
+        249,
+        176,
+        150,
+        84,
+        178,
+        66,
+      ],
+    },
+    "keyDerivationFunc": Object {
+      "id": "openssl-derive-bytes",
+    },
   },
   "format": "pkcs1-pem",
   "keyAlgorithm": Object {
@@ -7822,18 +7857,23 @@ Object {
 exports[`decomposePrivateKey decryption should decompose a RSA key encrypted with rc2 128 bits (implicit) 1`] = `
 Object {
   "encryptionAlgorithm": Object {
-    "bits": 128,
-    "id": "rc2-cbc",
-    "iv": Uint8Array [
-      169,
-      31,
-      255,
-      222,
-      33,
-      4,
-      80,
-      49,
-    ],
+    "encryptionScheme": Object {
+      "bits": 128,
+      "id": "rc2-cbc",
+      "iv": Uint8Array [
+        169,
+        31,
+        255,
+        222,
+        33,
+        4,
+        80,
+        49,
+      ],
+    },
+    "keyDerivationFunc": Object {
+      "id": "openssl-derive-bytes",
+    },
   },
   "format": "pkcs1-pem",
   "keyAlgorithm": Object {
@@ -9018,18 +9058,23 @@ Object {
 exports[`decomposePrivateKey decryption should decompose a RSA key encrypted with rc2 128 bits 1`] = `
 Object {
   "encryptionAlgorithm": Object {
-    "bits": 128,
-    "id": "rc2-cbc",
-    "iv": Uint8Array [
-      169,
-      31,
-      255,
-      222,
-      33,
-      4,
-      80,
-      49,
-    ],
+    "encryptionScheme": Object {
+      "bits": 128,
+      "id": "rc2-cbc",
+      "iv": Uint8Array [
+        169,
+        31,
+        255,
+        222,
+        33,
+        4,
+        80,
+        49,
+      ],
+    },
+    "keyDerivationFunc": Object {
+      "id": "openssl-derive-bytes",
+    },
   },
   "format": "pkcs1-pem",
   "keyAlgorithm": Object {

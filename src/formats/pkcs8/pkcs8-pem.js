@@ -11,7 +11,7 @@ export const decomposeKey = (pem, options) => {
     try {
         decodedPem = decodePem(pemStr)[0];
     } catch (err) {
-        throw new InvalidInputKeyError('Failed to decode PKCS8 as PEM');
+        throw new InvalidInputKeyError('Failed to decode PKCS8 as PEM', { originalErr: err });
     }
 
     const pkcs8Key = binaryStringToUint8Array(decodedPem.body);

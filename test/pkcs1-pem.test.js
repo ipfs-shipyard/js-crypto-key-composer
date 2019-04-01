@@ -187,23 +187,30 @@ describe('composePrivateKey', () => {
             try {
                 composePrivateKey({
                     ...decomposedKey,
-                    encryptionAlgorithm: { id: 'rc2-cbc', bits: 1024 },
+                    encryptionAlgorithm: {
+                        encryptionScheme: { id: 'rc2-cbc', bits: 1 },
+                    },
                 }, {
                     password,
                 });
             } catch (err) {
-                expect(err.message).toBe('Unsupported RC2 bits parameter with value \'1024\'');
+                expect(err.message).toBe('Unsupported RC2 bits parameter with value \'1\'');
                 expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
             }
         });
 
         it('should default to 128 bits for the rc2 encryption algorithm', () => {
             const decomposedKey = decomposePrivateKey(KEYS['rsa-1'], { format: 'pkcs1-pem' });
-            const composedKey = composePrivateKey({ ...decomposedKey, encryptionAlgorithm: 'rc2-cbc' }, { password });
+            const composedKey = composePrivateKey({
+                ...decomposedKey,
+                encryptionAlgorithm: {
+                    encryptionScheme: 'rc2-cbc',
+                },
+            }, { password });
             const recomposedKey = decomposePrivateKey(composedKey, { format: 'pkcs1-pem', password });
 
-            expect(recomposedKey.encryptionAlgorithm.id).toBe('rc2-cbc');
-            expect(recomposedKey.encryptionAlgorithm.bits).toBe(128);
+            expect(recomposedKey.encryptionAlgorithm.encryptionScheme.id).toBe('rc2-cbc');
+            expect(recomposedKey.encryptionAlgorithm.encryptionScheme.bits).toBe(128);
         });
 
         it('should compose a RSA key encrypted with des-cbc (mirroring)', () => {
@@ -225,7 +232,7 @@ describe('composePrivateKey', () => {
             const composedKey = composePrivateKey(decomposedKey, { password });
             const recomposedKey = decomposePrivateKey(composedKey, { format: 'pkcs1-pem', password });
 
-            expect(recomposedKey.encryptionAlgorithm.id).toBe('aes256-cbc');
+            expect(recomposedKey.encryptionAlgorithm.encryptionScheme.id).toBe('aes256-cbc');
         });
 
         it('should fail if encryption algorithm was specified without a password', () => {
@@ -241,7 +248,7 @@ describe('composePrivateKey', () => {
             }
         });
 
-        it('should fail if the encryption algorithm is not supported', () => {
+        it('should fail if the key derivation func is not supported', () => {
             const decomposedKey = decomposePrivateKey(KEYS['rsa-1'], { format: 'pkcs1-pem' });
 
             expect.assertions(2);
@@ -249,12 +256,34 @@ describe('composePrivateKey', () => {
             try {
                 composePrivateKey({
                     ...decomposedKey,
-                    encryptionAlgorithm: { id: 'foo' },
+                    encryptionAlgorithm: {
+                        keyDerivationFunc: 'foo',
+                    },
                 }, {
                     password,
                 });
             } catch (err) {
-                expect(err.message).toBe('Unsupported encryption algorithm id \'foo\'');
+                expect(err.message).toBe('PKCS1 PEM keys only support \'openssl-derive-bytes\' as the key derivation func');
+                expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
+            }
+        });
+
+        it('should fail if the encryption scheme is not supported', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['rsa-1'], { format: 'pkcs1-pem' });
+
+            expect.assertions(2);
+
+            try {
+                composePrivateKey({
+                    ...decomposedKey,
+                    encryptionAlgorithm: {
+                        encryptionScheme: 'foo',
+                    },
+                }, {
+                    password,
+                });
+            } catch (err) {
+                expect(err.message).toBe('Unsupported encryption scheme id \'foo\'');
                 expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
             }
         });
