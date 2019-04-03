@@ -3,5 +3,6 @@ import * as pkcs1Pem from './pkcs1/pkcs1-pem';
 import * as pkcs8Der from './pkcs8/pkcs8-der';
 import * as pkcs8Pem from './pkcs8/pkcs8-pem';
 import * as spkiDer from './spki/spki-der';
+import * as spkiPem from './spki/spki-pem';
 
-export { pkcs1Der, pkcs1Pem, pkcs8Der, pkcs8Pem, spkiDer };
+export { pkcs1Der, pkcs1Pem, pkcs8Der, pkcs8Pem, spkiDer, spkiPem };

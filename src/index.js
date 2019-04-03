@@ -1,4 +1,4 @@
-import { pkcs1Der, pkcs1Pem, pkcs8Der, pkcs8Pem, spkiDer } from './formats';
+import { pkcs1Der, pkcs1Pem, pkcs8Der, pkcs8Pem, spkiDer, spkiPem } from './formats';
 import { validateInputKey, validateFormat, validateDecomposedKey } from './util/validator';
 import { AggregatedInvalidInputKeyError, InvalidInputKeyError } from './util/errors';
 import KEY_TYPES from './util/key-types';
@@ -12,6 +12,7 @@ const PRIVATE_FORMATS = {
 
 const PUBLIC_FORMATS = {
     'spki-der': spkiDer,
+    'spki-pem': spkiPem,
 };
 
 const decomposeKey = (supportedFormats, inputKey, options) => {
