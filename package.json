@@ -1,5 +1,5 @@
 {
-  "name": "crypto-key-parser",
+  "name": "crypto-key-composer",
   "version": "0.0.0",
   "description": "A library to parse crypto keys in different types and formats",
   "main": "lib/index.js",
@@ -15,6 +15,8 @@
     "crypto",
     "parse",
     "transform",
+    "compose",
+    "decompose",
     "pem",
     "pkcs1",
     "pkcs8",

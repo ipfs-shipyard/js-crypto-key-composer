@@ -1,26 +1,26 @@
-# crypto-key-parser
+# crypto-key-composer
 
 [![NPM version][npm-image]][npm-url] [![Downloads][downloads-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Coverage Status][codecov-image]][codecov-url] [![Dependency status][david-dm-image]][david-dm-url] [![Dev Dependency status][david-dm-dev-image]][david-dm-dev-url]
 
-[npm-url]:https://npmjs.org/package/crypto-key-parser
-[downloads-image]:http://img.shields.io/npm/dm/crypto-key-parser.svg
-[npm-image]:http://img.shields.io/npm/v/crypto-key-parser.svg
-[travis-url]:https://travis-ci.org/ipfs-shipyard/js-crypto-key-parser
-[travis-image]:http://img.shields.io/travis/ipfs-shipyard/js-crypto-key-parser/master.svg
-[codecov-url]:https://codecov.io/gh/ipfs-shipyard/js-crypto-key-parser
-[codecov-image]:https://img.shields.io/codecov/c/github/ipfs-shipyard/js-crypto-key-parser/master.svg
-[david-dm-url]:https://david-dm.org/ipfs-shipyard/js-crypto-key-parser
-[david-dm-image]:https://img.shields.io/david/ipfs-shipyard/js-crypto-key-parser.svg
-[david-dm-dev-url]:https://david-dm.org/ipfs-shipyard/js-crypto-key-parser?type=dev
-[david-dm-dev-image]:https://img.shields.io/david/dev/ipfs-shipyard/js-crypto-key-parser.svg
+[npm-url]:https://npmjs.org/package/crypto-key-composer
+[downloads-image]:http://img.shields.io/npm/dm/crypto-key-composer.svg
+[npm-image]:http://img.shields.io/npm/v/crypto-key-composer.svg
+[travis-url]:https://travis-ci.org/ipfs-shipyard/js-crypto-key-composer
+[travis-image]:http://img.shields.io/travis/ipfs-shipyard/js-crypto-key-composer/master.svg
+[codecov-url]:https://codecov.io/gh/ipfs-shipyard/js-crypto-key-composer
+[codecov-image]:https://img.shields.io/codecov/c/github/ipfs-shipyard/js-crypto-key-composer/master.svg
+[david-dm-url]:https://david-dm.org/ipfs-shipyard/js-crypto-key-composer
+[david-dm-image]:https://img.shields.io/david/ipfs-shipyard/js-crypto-key-composer.svg
+[david-dm-dev-url]:https://david-dm.org/ipfs-shipyard/js-crypto-key-composer?type=dev
+[david-dm-dev-image]:https://img.shields.io/david/dev/ipfs-shipyard/js-crypto-key-composer.svg
 
-A library to parse crypto keys in different types and formats.
+A library to decompose and compose crypto keys in different types and formats.
 
 
 ## Installation
 
 ```sh
-$ npm install crypto-key-parser
+$ npm install crypto-key-composer
 ```
 
 This library is written in modern JavaScript and is published in both CommonJS and ES module transpiled variants. If you target older browsers please make sure to transpile accordingly.
@@ -34,7 +34,7 @@ Moreover, some of this library's dependencies use the native Node [Buffer](https
 Parses a public key, extracting information containing its [`format`](#formats), [`keyAlgorithm`](#key-algorithms), [`keyData`](#key-data) and [`encryptionAlgorithm`](#encryption-algorithms).
 
 ```js
-import { decomposePrivateKey } from 'crypto-key-parser';
+import { decomposePrivateKey } from 'crypto-key-composer';
 
 const myPemKey = `
 -----BEGIN RSA PRIVATE KEY-----
@@ -76,7 +76,7 @@ When the `inputKey` is not encoded in any of the valid formats, a `AggregatedInv
 Composes a private key from its parts: [`format`](#formats), [`keyAlgorithm`](#key-algorithms), [`keyData`](#key-data) and[`encryptionAlgorithm`](#encryption-algorithms). This function is the inverse of `decomposePrivateKey`.
 
 ```js
-import { composePrivateKey } from 'crypto-key-parser';
+import { composePrivateKey } from 'crypto-key-composer';
 
 const myPrivateKey = composePrivateKey({
     format: 'pkcs1-pem',
@@ -104,7 +104,7 @@ Meaningful [errors](src/util/errors.js) with codes are thrown if something went 
 Parses a public key, extracting information containing its [`format`](#formats), [`keyAlgorithm`](#key-algorithms) and [`keyData`](#key-data).
 
 ```js
-import { decomposePrivateKey } from 'crypto-key-parser';
+import { decomposePrivateKey } from 'crypto-key-composer';
 
 const myPemKey = `
 -----BEGIN RSA PRIVATE KEY-----
@@ -145,7 +145,7 @@ When the `inputKey` is not encoded in any of the valid formats, a `AggregatedInv
 Composes a public key from its parts: [`format`](#formats), [`keyAlgorithm`](#key-algorithms) and [`keyData`](#key-data). This function is the inverse of `decomposePublicKey`.
 
 ```js
-import { composePrivateKey } from 'crypto-key-parser';
+import { composePrivateKey } from 'crypto-key-composer';
 
 const myPrivateKey = composePrivateKey({
     format: 'pkcs1-pem',
@@ -171,7 +171,7 @@ Meaningful [errors](src/util/errors.js) with codes are thrown if something went 
 Returns the key type based on the passed key algorithm. The `keyAlgorithm` might be an object or a string.
 
 ```js
-import { getKeyTypeFromAlgorithm } from 'crypto-key-parser';
+import { getKeyTypeFromAlgorithm } from 'crypto-key-composer';
 
 getKeyTypeFromAlgorithm({ id: 'rsa-encryption' })  // rsa
 getKeyTypeFromAlgorithm('rsa-encryption')  // rsa
@@ -285,7 +285,7 @@ Because they have no parameters, the example above may also be expressed like so
 }
 ```
 
-Also, you may use the `rsa` alias that maps to `rsa-encryption`. At the moment, `rsaes-oaep` and `rsassa-pss` are not yet supported, see ([issue #4](https://github.com/ipfs-shipyard/js-crypto-key-parser/issues/4)).
+Also, you may use the `rsa` alias that maps to `rsa-encryption`. At the moment, `rsaes-oaep` and `rsassa-pss` are not yet supported, see ([issue #4](https://github.com/ipfs-shipyard/js-crypto-key-composer/issues/4)).
 
 </details>
 
