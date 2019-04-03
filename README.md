@@ -58,7 +58,7 @@ const myDecomposedKey = decomposePrivateKey(myPemKey)
 // }
 ```
 
-Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `rsaes-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getkeytypefromalgorithmkeyalgorithm`](#get-key-type-from-algorithm) to properly get a key type.
+Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `rsaes-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getKeyTypeFromAlgorithm`](#getkeytypefromalgorithmkeyalgorithm) to properly get the key type.
 </details>
 
 **Available options**:
@@ -86,7 +86,7 @@ const myPrivateKey = composePrivateKey({
     keyData: {
         publicExponent: 65537,
         modulus: Uint8Array(...),
-        prime1: Uint8Array(...),
+        prime1: Uint8Array(...)
     }
 });
 ```
@@ -128,7 +128,7 @@ const myDecomposedKey = decomposePrivateKey(myPemKey)
 // }
 ```
 
-Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `rsaes-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getkeytypefromalgorithmkeyalgorithm`](#get-key-type-from-algorithm) to properly get a key type.
+Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `rsaes-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getKeyTypeFromAlgorithm`](#get-key-type-from-algorithm) to properly get the key type.
 </details>
 
 Available options:
@@ -154,7 +154,7 @@ const myPrivateKey = composePrivateKey({
     },
     keyData: {
         publicExponent: 65537,
-        modulus: Uint8Array(...),
+        modulus: Uint8Array(...)
     }
 });
 ```
@@ -168,9 +168,7 @@ Meaningful [errors](src/util/errors.js) with codes are thrown if something went 
 
 ### getKeyTypeFromAlgorithm(keyAlgorithm)
 
-Returns the key type based on the passed key algorithm.
-
-The `keyAlgorithm` might be an object or a string.
+Returns the key type based on the passed key algorithm. The `keyAlgorithm` might be an object or a string.
 
 ```js
 import { getKeyTypeFromAlgorithm } from 'crypto-key-parser';
@@ -192,7 +190,7 @@ The `pkcs1-der` is the DER encoded ASN1 format defined in [RFC 8017](https://too
 This format is only capable of storing unencrypted RSA keys. It's recommended to use the newer PKCS8 whenever possible because it's able to store a variety of key types other than RSA.
 
 Supported key algorithms:
-- Just the standard `rsa-encryption` RSA algorithm (maps to the `rsa` alias)
+- Just the standard `rsa-encryption` RSA algorithm (or the `rsa` alias)
 
 Supported encryption algorithms: *none*
 </details>
@@ -205,7 +203,7 @@ Supported key algorithms: *same as `pkcs1-der`*
 
 Supported encryption algorithms:
 - keyDerivationFunc: `openssl-derive-bytes` (default)
-- encryptionScheme: `aes256-cbc` (default), `aes192-cbc`, `aes128-cbc`, `des-ede3-cbc`, `des-cbc`, `rc2-128`, `rc2-64`, `rc2-40`
+- encryptionScheme: `aes256-cbc` (default), `aes192-cbc`, `aes128-cbc`, `des-ede3-cbc`, `des-cbc`, `rc2-cbc`
 </details>
 
 <details><summary><strong>pcks8-der (private)</strong></summary>
@@ -214,11 +212,11 @@ The `pkcs1-der` is the DER encoded ASN1 format defined in [RFC 5208](https://too
 
 Supported key algorithms:
 - RSA keys
-- ED25519
+- ED25519 keys
 
-Supported [PKCS#5](https://tools.ietf.org/html/rfc8018) encryption algorithms:
-- keyDerivationFunc: `pbkdf2+hmac-with-sha512` (default), `pbkdf2+hmac-with-sha384`, `pbkdf2+hmac-with-sha256`, `pbkdf2+hmac-with-sha1`
-- encryptionScheme: `aes256-cbc` (default), `aes192-cbc`, `aes128-cbc`, `des-ede3-cbc`, `des-cbc`, `rc2-128`, `rc2-64`, `rc2-40`
+Supported encryption algorithms ([PKCS#5](https://tools.ietf.org/html/rfc8018)):
+- keyDerivationFunc: `pbkdf2` (default)
+- encryptionScheme: `aes256-cbc` (default), `aes192-cbc`, `aes128-cbc`, `des-ede3-cbc`, `des-cbc`, `rc2-cbc`
 </details>
 
 <details><summary><strong>pcks8-pem (private)</strong></summary>
@@ -231,19 +229,6 @@ Supported encryption algorithms: *same as `pkcs8-der`*
 </details>
 
 <details><summary><strong>spki-der (public)</strong></summary>
-
-The `spki-der` is the DER encoded ASN1 format defined in [RFC 5280](https://tools.ietf.org/html/rfc5280).
-
-Supported key algorithms:
-- RSA keys
-- ED25519 keys
-
-Supported [PKCS#5](https://tools.ietf.org/html/rfc8018) encryption algorithms:
-- keyDerivationFunc: `pbkdf2+hmac-with-sha512` (default), `pbkdf2+hmac-with-sha384`, `pbkdf2+hmac-with-sha256`, `pbkdf2+hmac-with-sha1`
-- encryptionScheme: `aes256-cbc` (default), `aes192-cbc`, `aes128-cbc`, `des-ede3-cbc`, `des-cbc`, `rc2-128`, `rc2-64`, `rc2-40`
-</details>
-
-<details><summary><strong>spki-der (private)</strong></summary>
 
 The `pkcs8-pem` is the PEM encoded version of `pkcs8-der` and is defined in [RFC 1421](https://tools.ietf.org/html/rfc1421).
 
@@ -265,8 +250,10 @@ Supported encryption algorithms: *does not apply*
 
 ### Key Algorithms
 
+The actual supported key algorithms vary from format to format. Be sure to check the list of supported key algorithms for each format in the the [Formats](#formats) section.
+
 <details><summary><strong>RSA keys</strong></summary>
-   
+
 The following RSA key algorithms are supported:
 - `rsa-encryption`
 - `md2-with-rsa-encryption`
@@ -290,7 +277,7 @@ All of them are expressed like so:
 }
 ```
 
-Because they have no parameters, they may also be expressed like so:
+Because they have no parameters, the example above may also be expressed like so:
 
 ```js
 {
@@ -298,10 +285,7 @@ Because they have no parameters, they may also be expressed like so:
 }
 ```
 
-Also, you may use the `rsa` alias that maps to `rsa-encryption`.
-
-
-At the moment, `rsaes-oaep` and `rsassa-pss` are not yet supported, see ([issue #4](https://github.com/ipfs-shipyard/js-crypto-key-parser/issues/4)).
+Also, you may use the `rsa` alias that maps to `rsa-encryption`. At the moment, `rsaes-oaep` and `rsassa-pss` are not yet supported, see ([issue #4](https://github.com/ipfs-shipyard/js-crypto-key-parser/issues/4)).
 
 </details>
 
@@ -317,7 +301,7 @@ ED25519 keys just have a single algorithm, `ed25519`, and may be expressed like 
 }
 ```
 
-Because there's no parameters, they may also be expressed like so:
+Because there's no parameters, the example above may also be expressed like so:
 
 ```js
 {
@@ -325,7 +309,6 @@ Because there's no parameters, they may also be expressed like so:
 }
 ```
 </details>
-
 
 ### Key Data
 
@@ -347,7 +330,7 @@ Because there's no parameters, they may also be expressed like so:
             {
                 prime: Uint8Array(/* ... */),
                 exponent: Uint8Array(/* ... */),
-                coefficient Uint8Array(/* ... */),
+                coefficient Uint8Array(/* ... */)
             }
         ]
     }
@@ -371,18 +354,22 @@ Because there's no parameters, they may also be expressed like so:
    
 ```js
 {
-    seed: Uint8Array( /* 32 bytes */)
+    keyData: {
+        seed: Uint8Array( /* 32 bytes */)
+    }
 }
 ```
 
-The seed is composed of 32 bytes which serves as the basis to derive the a 64 bytes private key and a 32 bytes public key
+The seed is composed of 32 bytes which serves as the basis to derive the 64 bytes private key and the 32 bytes public key.
 </details>
 
 <details><summary><strong>ED25519 public keys</strong></summary>
    
 ```js
 {
-    bytes: Uint8Array( /* 32 bytes */)
+    keyData: {
+        bytes: Uint8Array( /* 32 bytes */)
+    }
 }
 ```
 </details>
@@ -390,7 +377,157 @@ The seed is composed of 32 bytes which serves as the basis to derive the a 64 by
 
 ### Encryption Algorithms
 
-TODO
+The actual supported encryption algorithms vary from format to format. Be sure to check the list of supported encryption algorithms for each format in the the [Formats](#formats) section.
+
+The encryption algorithm is composed by two parts: the `keyDerivationFunc` and the `encryptionScheme`.
+
+#### Key derivation functions
+
+<details><summary><strong>OpenSSL derive bytes</strong></summary>
+   
+The `openssl-derive-bytes` is used when encrypting PKCS#1 PEM keys and was pionereed by OpenSSL to derive a key from the password.
+
+```js
+{
+    encryptionAlgorithm: {
+        keyDerivationFunc: {
+            id: `openssl-derive-bytes`,
+        }
+        encryptionScheme: ...
+    }
+}
+```
+
+Because there's no parameters, the example above may also be expressed like so:
+
+```js
+{
+    encryptionAlgorithm: {
+        keyDerivationFunc: `openssl-derive-bytes`,
+        encryptionScheme: ...
+    }
+}
+```
+</details>
+
+<details><summary><strong>PBKDF2</strong></summary>
+   
+The `pbkdf2` is used when encrypting PKCS#8 keys and is part of PKCS#5 defined by [RFC 8018](https://tools.ietf.org/html/rfc8018).
+
+```js
+{
+    encryptionAlgorithm: {
+        keyDerivationFunc: {
+            id: `pbkdf2`,
+            iterationCount: 10000,  // The number of iterations
+            keyLength: 32, // Automatic, based on the `encryptionScheme`
+            prf: 'hmac-with-sha512'  // The pseudo-random function
+        }
+        encryptionScheme: ...
+    }
+}
+```
+
+The parameters above are the default ones and may be omited if you don't need to tweak them. In that case, you may express the example above like so:
+
+```js
+{
+    encryptionAlgorithm: {
+        keyDerivationFunc: `pbkdf2`,
+        encryptionScheme: ...
+    }
+}
+```
+
+The supported `prf` values are `hmac-with-sha512` (default), `hmac-with-sha384`, `hmac-with-sha256` and `hmac-with-sha1`.
+</details>
+
+#### Encryption scheme
+
+<details><summary><strong>AES</strong></summary>
+   
+The supported AES algorithms are `aes256-cbc`,  `aes192-cbc` and `aes128-cbc`. Here's an example:
+
+```js
+{
+    encryptionAlgorithm: {
+        keyDerivationFunc: ...,
+        encryptionScheme: {
+            id: 'aes256-cbc',
+            iv: Uint8Array(/* random bytes */)
+        }
+    }
+}
+```
+
+The parameters may be omited if you don't need to tweak them. In that case, you may express the example above like so:
+
+```js
+{
+    encryptionAlgorithm: {
+        keyDerivationFunc: ...,
+        encryptionScheme: 'aes256-cbc'
+    }
+}
+```
+</details>
+
+<details><summary><strong>DES</strong></summary>
+   
+The supported DES algorithms are `des-cbc` and `des-ede3-cbc` (triple DES). Here's an example:
+
+```js
+{
+    encryptionAlgorithm: {
+        keyDerivationFunc: ...,
+        encryptionScheme: {
+            id: 'des-ede3-cbc',
+            iv: Uint8Array(/* random bytes */)
+        }
+    }
+}
+```
+
+The parameters may be omitedif you don't need to tweak them. In that case, you may express the example above like so:
+
+```js
+{
+    encryptionAlgorithm: {
+        keyDerivationFunc: ...,
+        encryptionScheme: 'aes256-cbc'
+    }
+}
+```
+</details>
+
+<details><summary><strong>RC2</strong></summary>
+   
+The supported RC2 algorithm is just `rc2-cbc` with `128` (default), `64` or `40` bits. Here's an example:
+
+```js
+{
+    encryptionAlgorithm: {
+        keyDerivationFunc: ...,
+        encryptionScheme: {
+            id: 'rc2-cbc',
+            iv: Uint8Array(/* random bytes */),
+            bits: 128
+        }
+    }
+}
+```
+
+The parameters may be omited if you don't need to tweak them. In that case, you may express the example above like so:
+
+```js
+{
+    encryptionAlgorithm: {
+        keyDerivationFunc: ...,
+        encryptionScheme: 'rc2-cbc'
+    }
+}
+```
+</details>
 
 
 ## Tests
