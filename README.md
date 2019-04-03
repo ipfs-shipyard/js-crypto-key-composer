@@ -31,7 +31,7 @@ Moreover, some of this library's dependencies use the native Node [Buffer](https
 
 ### decomposePrivateKey(inputKey, [options])
 
-Parses a public key, extracting information such as its format, key algorithm, key data and encryption algorithm.
+Parses a public key, extracting information containing its [`format`](#formats), [`keyAlgorithm`](#key-algorithms), [`keyData`](#key-data) and [`encryptionAlgorithm`](#encryption-algorithms).
 
 ```js
 import { decomposePrivateKey } from 'crypto-key-parser';
@@ -43,7 +43,6 @@ ACTUAL KEY BASE64 HERE
 `
 
 const myDecomposedKey = decomposePrivateKey(myPemKey)
-
 // {
 //     format: 'pkcs1-pem',
 //     keyAlgorithm: {
@@ -59,41 +58,10 @@ const myDecomposedKey = decomposePrivateKey(myPemKey)
 // }
 ```
 
-Returns the decomposed key, which is an object with the following properties:
-
-<details><summary><strong>format</strong></summary>
-   
-The format of the key.
-
-See [Formats](#formats) for a list of all supported formats.
+Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `rsaes-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getkeytypefromalgorithmkeyalgorithm`](#get-key-type-from-algorithm) to properly get a key type.
 </details>
 
-<details><summary><strong>keyAlgorithm</strong></summary>
-   
-The key algorithm object containing its id and parameters.
-
-See [Key Algorithms](#key-algorithms) for a list of all supported key algorithms.
-
-Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `rsaes-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getKeyTypeFromAlgorithm(keyAlgorithm)`](#get-key-type-from-algorithm) to properly get a key type.
-</details>
-
-<details><summary><strong>keyData</strong></summary>
-   
-The key data object, containing the interpreted private key itself.
-
-The data inside this object varies per key type. As an example, for RSA keys, this object contains `prime1`, `prime2`, `exponent1`, `exponent2`, and other properties that compose the key.
-
-See [Key Data](#key-data) for a list of examples for all key types.
-</details>
-
-<details><summary><strong>encryptionAlgorithm</strong></summary>
-  
-The encryption algorithm used to decrypt the key or `null` if it was unencrypted.
-
-See [Encryption Algorithms](#encryption-algorithms) for a list all the supported encryption algorithms.
-</details>
-
-Available options:
+**Available options**:
 
 | name | type | default | description |
 | ---- | ---- | ------- | ----------- |
@@ -103,10 +71,9 @@ Available options:
 Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong.
 When the `inputKey` is not encoded in any of the valid formats, a `AggregatedInvalidInputKeyError` is thrown, containing a `errors` property with the errors indexed by format. If a single `options.format` was specified, a `InvalidInputKeyError` is thrown instead.
 
-
 ### composePrivateKey(decomposedKey, [options])
 
-Composes a private key from its decomposed parts. This function is the inverse of `decomposePrivateKey`.
+Composes a private key from its parts: [`format`](#formats), [`keyAlgorithm`](#key-algorithms), [`keyData`](#key-data) and[`encryptionAlgorithm`](#encryption-algorithms). This function is the inverse of `decomposePrivateKey`.
 
 ```js
 import { composePrivateKey } from 'crypto-key-parser';
@@ -120,54 +87,21 @@ const myPrivateKey = composePrivateKey({
         publicExponent: 65537,
         modulus: Uint8Array(...),
         prime1: Uint8Array(...),
-    },
-    encryptionAlgorithm: 'aes128-cbc'
+    }
 });
 ```
 
-<details><summary><strong>format</strong></summary>
-   
-The format of the key.
-
-See [Formats](#formats) for a list of all supported formats.
-</details>
-
-<details><summary><strong>keyAlgorithm</strong></summary>
-   
-The key algorithm object containing its id and parameters. You may also pass an alias directly as a string, such as `rsa` and `ed25519`.
-
-See [Key Algorithms](#key-algorithms) for a list of all supported key algorithms and aliases.
-</details>
-
-<details><summary><strong>keyData</strong></summary>
-   
-The key data object, containing the private key itself.
-
-The data inside this object varies per key type. As an example, for RSA keys, this object contains `prime1`, `prime2`, `exponent1`, `exponent2`, and other properties that compose the key.
-
-See [Key Data](#key-data) for a list of examples for all key types.
-</details>
-
-<details><summary><strong>encryptionAlgorithm</strong></summary>
-  
-The encryption algorithm to use to encrypt the key or `null` to use the defaut one for the format. This will not be used unless the `password` option is set.
-
-See [Encryption Algorithms](#encryption-algorithms) for a list all the supported encryption algorithms.
-</details>
-
-Available options:
-
+**Available options**:
 
 | name | type | default | description |
 | ---- | ---- | ------- | ----------- |
-| password | string | | The password to use to decrypt the key |
+| password | string | | The password to use to encrypt the key |
 
 Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong.
 
-
 ### decomposePublicKey(inputKey, [options])
 
-Parses a public key, extracting information such as its format, key algorithm and key data.
+Parses a public key, extracting information containing its [`format`](#formats), [`keyAlgorithm`](#key-algorithms) and [`keyData`](#key-data).
 
 ```js
 import { decomposePrivateKey } from 'crypto-key-parser';
@@ -179,7 +113,6 @@ ACTUAL KEY BASE64 HERE
 `
 
 const myDecomposedKey = decomposePrivateKey(myPemKey)
-
 // {
 //     format: 'pkcs1-pem',
 //     keyAlgorithm: {
@@ -195,38 +128,7 @@ const myDecomposedKey = decomposePrivateKey(myPemKey)
 // }
 ```
 
-Returns the decomposed key, which is an object with the following properties:
-
-<details><summary><strong>format</strong></summary>
-   
-The format of the key.
-
-See [Formats](#formats) for a list of all supported formats.
-</details>
-
-<details><summary><strong>keyAlgorithm</strong></summary>
-   
-The key algorithm object containing its id and parameters.
-
-See [Key Algorithms](#key-algorithms) for a list of all supported key algorithms.
-
-Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `rsaes-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getKeyTypeFromAlgorithm(keyAlgorithm)`](#get-key-type-from-algorithm) to properly get a key type.
-</details>
-
-<details><summary><strong>keyData</strong></summary>
-   
-The key data object, containing the interpreted private key itself.
-
-The data inside this object varies per key type. As an example, for RSA keys, this object contains `prime1`, `prime2`, `exponent1`, `exponent2`, and other properties that compose the key.
-
-See [Key Data](#key-data) for a list of examples for all key types.
-</details>
-
-<details><summary><strong>encryptionAlgorithm</strong></summary>
-  
-The encryption algorithm used to decrypt the key or `null` if it was unencrypted.
-
-See [Encryption Algorithms](#encryption-algorithms) for a list all the supported encryption algorithms.
+Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `rsaes-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getkeytypefromalgorithmkeyalgorithm`](#get-key-type-from-algorithm) to properly get a key type.
 </details>
 
 Available options:
@@ -234,11 +136,35 @@ Available options:
 | name | type | default | description |
 | ---- | ---- | ------- | ----------- |
 | format | string/Array | *all formats*  | Limit the parsing to one or more formats |
-| password | string | | The password to use to decrypt the key |
 
 Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong.
 When the `inputKey` is not encoded in any of the valid formats, a `AggregatedInvalidInputKeyError` is thrown, containing a `errors` property with the errors indexed by format. If a single `options.format` was specified, a `InvalidInputKeyError` is thrown instead.
 
+### composePublicKey(decomposedKey, [options])
+
+Composes a public key from its parts: [`format`](#formats), [`keyAlgorithm`](#key-algorithms) and [`keyData`](#key-data). This function is the inverse of `decomposePublicKey`.
+
+```js
+import { composePrivateKey } from 'crypto-key-parser';
+
+const myPrivateKey = composePrivateKey({
+    format: 'pkcs1-pem',
+    keyAlgorithm: {
+        id: 'rsa-encryption',
+    },
+    keyData: {
+        publicExponent: 65537,
+        modulus: Uint8Array(...),
+    }
+});
+```
+
+**Available options**:
+
+| name | type | default | description |
+| ---- | ---- | ------- | ----------- |
+
+Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong.
 
 ### getKeyTypeFromAlgorithm(keyAlgorithm)
 
@@ -249,9 +175,9 @@ The `keyAlgorithm` might be an object or a string.
 ```js
 import { getKeyTypeFromAlgorithm } from 'crypto-key-parser';
 
-getKeyTypeFromAlgorithm({ id: 'rsa-encryption' })  // `rsa`
-getKeyTypeFromAlgorithm('rsa-encryption')  // `rsa`
-getKeyTypeFromAlgorithm('ed25519')  // `ed25519`
+getKeyTypeFromAlgorithm({ id: 'rsa-encryption' })  // rsa
+getKeyTypeFromAlgorithm('rsa-encryption')  // rsa
+getKeyTypeFromAlgorithm('ed25519')  // ed25519
 ```
 
 
@@ -341,7 +267,7 @@ Supported encryption algorithms: *does not apply*
 
 <details><summary><strong>RSA keys</strong></summary>
    
-The following RSA key algorithms *are* supported:
+The following RSA key algorithms are supported:
 - `rsa-encryption`
 - `md2-with-rsa-encryption`
 - `md4-with-rsa-encryption`
@@ -386,7 +312,7 @@ ED25519 keys just have a single algorithm, `ed25519`, and may be expressed like 
 ```js
 {
     keyAlgorithm: {
-        id: `ed25519`
+        id: 'ed25519'
     }
 }
 ```
@@ -395,7 +321,7 @@ Because there's no parameters, they may also be expressed like so:
 
 ```js
 {
-    keyAlgorithm: `ed25519`
+    keyAlgorithm: 'ed25519'
 }
 ```
 </details>
@@ -448,9 +374,9 @@ Because there's no parameters, they may also be expressed like so:
     seed: Uint8Array( /* 32 bytes */)
 }
 ```
-</details>
 
 The seed is composed of 32 bytes which serves as the basis to derive the a 64 bytes private key and a 32 bytes public key
+</details>
 
 <details><summary><strong>ED25519 public keys</strong></summary>
    
