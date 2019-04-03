@@ -14,7 +14,7 @@
 [david-dm-dev-url]:https://david-dm.org/ipfs-shipyard/js-crypto-key-composer?type=dev
 [david-dm-dev-image]:https://img.shields.io/david/dev/ipfs-shipyard/js-crypto-key-composer.svg
 
-A library to decompose and compose crypto keys in different types and formats.
+A library to decompose and compose crypto keys of different types and formats.
 
 
 ## Installation
@@ -28,6 +28,12 @@ Moreover, some of this library's dependencies use the native Node [Buffer](https
 
 
 ## API
+
+- [`decomposePrivateKey(inputKey, [options])`](#decomposeprivatekeyinputkey-options)
+- [`composePrivateKey(decomposedKey, [options])`](#composeprivatekeydecomposedkey-options)
+- [`decomposePublicKey(inputKey, [options])`](#decomposepublickeyinputkey-options)
+- [`composePublicKey(decomposedKey)`](#composepublickeydecomposedkey)
+- [`getKeyTypeFromAlgorithm(keyAlgorithm)`](#getkeytypefromalgorithmkeyalgorithm)
 
 ### decomposePrivateKey(inputKey, [options])
 
@@ -58,14 +64,16 @@ const myDecomposedKey = decomposePrivateKey(myPemKey)
 // }
 ```
 
-Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `rsaes-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getKeyTypeFromAlgorithm`](#getkeytypefromalgorithmkeyalgorithm) to properly get the key type.
+The `inputKey` may be a TypedArray (including Node's Buffer), a ArrayBuffer or a binary string.
+
+Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `sha512-with-rsa-encryption`, `rsa-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getKeyTypeFromAlgorithm`](#getkeytypefromalgorithmkeyalgorithm) to properly get the key type.
 </details>
 
 **Available options**:
 
 | name | type | default | description |
 | ---- | ---- | ------- | ----------- |
-| format | string/Array | *all formats*  | Limit the parsing to one or more formats |
+| format | string/Array | *all formats* | Limit the parsing to one or more formats |
 | password | string | | The password to use to decrypt the key |
 
 Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong.
@@ -90,6 +98,8 @@ const myPrivateKey = composePrivateKey({
     }
 });
 ```
+
+The return value depends on the format. PEM based formats return a regular string while DER based formats return a Uint8Array.
 
 **Available options**:
 
@@ -119,14 +129,14 @@ const myDecomposedKey = decomposePrivateKey(myPemKey)
 //         id: 'rsa-encryption'
 //     },
 //     keyData: {
-//         publicExponent: 65537,
-//         modulus: Uint8Array(...),
-//         prime1: Uint8Array(...),
-//         // ...
+//        publicExponent: 65537,
+//        modulus: Uint8Array(...)
 //     },
 //     encryptionAlgorithm: null
 // }
 ```
+
+The `inputKey` may be a TypedArray (including Node's Buffer), a ArrayBuffer or a binary string.
 
 Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `rsaes-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getKeyTypeFromAlgorithm`](#get-key-type-from-algorithm) to properly get the key type.
 </details>
@@ -135,12 +145,12 @@ Available options:
 
 | name | type | default | description |
 | ---- | ---- | ------- | ----------- |
-| format | string/Array | *all formats*  | Limit the parsing to one or more formats |
+| format | string/Array | *all formats* | Limit the parsing to one or more formats |
 
 Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong.
 When the `inputKey` is not encoded in any of the valid formats, a `AggregatedInvalidInputKeyError` is thrown, containing a `errors` property with the errors indexed by format. If a single `options.format` was specified, a `InvalidInputKeyError` is thrown instead.
 
-### composePublicKey(decomposedKey, [options])
+### composePublicKey(decomposedKey)
 
 Composes a public key from its parts: [`format`](#formats), [`keyAlgorithm`](#key-algorithms) and [`keyData`](#key-data). This function is the inverse of `decomposePublicKey`.
 
@@ -158,11 +168,7 @@ const myPrivateKey = composePrivateKey({
     }
 });
 ```
-
-**Available options**:
-
-| name | type | default | description |
-| ---- | ---- | ------- | ----------- |
+The return value depends on the format. PEM based formats return a regular string while DER based formats return a Uint8Array.
 
 Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong.
 
@@ -391,7 +397,7 @@ The `openssl-derive-bytes` is used when encrypting PKCS#1 PEM keys and was pione
 {
     encryptionAlgorithm: {
         keyDerivationFunc: {
-            id: `openssl-derive-bytes`,
+            id: 'openssl-derive-bytes',
         }
         encryptionScheme: ...
     }
@@ -403,7 +409,7 @@ Because there's no parameters, the example above may also be expressed like so:
 ```js
 {
     encryptionAlgorithm: {
-        keyDerivationFunc: `openssl-derive-bytes`,
+        keyDerivationFunc: 'openssl-derive-bytes',
         encryptionScheme: ...
     }
 }
@@ -418,7 +424,7 @@ The `pbkdf2` is used when encrypting PKCS#8 keys and is part of PKCS#5 defined b
 {
     encryptionAlgorithm: {
         keyDerivationFunc: {
-            id: `pbkdf2`,
+            id: 'pbkdf2',
             iterationCount: 10000,  // The number of iterations
             keyLength: 32, // Automatic, based on the `encryptionScheme`
             prf: 'hmac-with-sha512'  // The pseudo-random function
@@ -433,7 +439,7 @@ The parameters above are the default ones and may be omited if you don't need to
 ```js
 {
     encryptionAlgorithm: {
-        keyDerivationFunc: `pbkdf2`,
+        keyDerivationFunc: 'pbkdf2',
         encryptionScheme: ...
     }
 }

@@ -22,8 +22,8 @@ export const decomposeKey = (pem, options) => {
     return decomposedKey;
 };
 
-export const composeKey = (decomposedKey, options) => {
-    const spkiKey = composeSpkiDerKey(decomposedKey, options);
+export const composeKey = (decomposedKey) => {
+    const spkiKey = composeSpkiDerKey(decomposedKey);
 
     const pem = {
         type: 'PUBLIC KEY',

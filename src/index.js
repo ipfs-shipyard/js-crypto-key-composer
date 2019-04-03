@@ -18,7 +18,6 @@ const PUBLIC_FORMATS = {
 const decomposeKey = (supportedFormats, inputKey, options) => {
     inputKey = validateInputKey(inputKey);
     options = {
-        password: null,
         format: Object.keys(supportedFormats),
         ...options,
     };
@@ -62,10 +61,7 @@ const decomposeKey = (supportedFormats, inputKey, options) => {
 };
 
 const composeKey = (supportedFormats, decomposedKey, options) => {
-    options = {
-        password: null,
-        ...options,
-    };
+    options = { ...options };
 
     decomposedKey = validateDecomposedKey(decomposedKey, supportedFormats);
 
@@ -78,7 +74,7 @@ export const composePrivateKey = (decomposedKey, options) => composeKey(PRIVATE_
 
 export const decomposePublicKey = (inputKey, options) => decomposeKey(PUBLIC_FORMATS, inputKey, options);
 
-export const composePublicKey = (decomposedKey, options) => composeKey(PUBLIC_FORMATS, decomposedKey, options);
+export const composePublicKey = (decomposedKey) => composeKey(PUBLIC_FORMATS, decomposedKey);
 
 export const getKeyTypeFromAlgorithm = (keyAlgorithm) => {
     const keyAlgorithmId = typeof keyAlgorithm === 'string' ? keyAlgorithm : keyAlgorithm && keyAlgorithm.id;
