@@ -1,6 +1,7 @@
 import { pkcs1Der, pkcs1Pem, pkcs8Der, pkcs8Pem } from './formats';
 import { validateInputKey, validateFormat, validateDecomposedKey } from './util/validator';
 import { AggregatedInvalidInputKeyError, InvalidInputKeyError } from './util/errors';
+import KEY_TYPES from './util/key-types';
 
 const PRIVATE_FORMATS = {
     'pkcs1-pem': pkcs1Pem,
@@ -80,3 +81,9 @@ export const decomposePrivateKey = (inputKey, options) => decomposeKey(PRIVATE_F
 export const composePrivateKey = (decomposedKey, options) => composeKey(PRIVATE_FORMATS, decomposedKey, options);
 
 // export const composePublicKey = (decomposedKey, options) => composeKey(PUBLIC_FORMATS, decomposedKey, options);
+
+export const getKeyTypeFromAlgorithm = (keyAlgorithm) => {
+    const keyAlgorithmId = typeof keyAlgorithm === 'string' ? keyAlgorithm : keyAlgorithm.id;
+
+    return KEY_TYPES[keyAlgorithmId];
+};
