@@ -6,7 +6,6 @@ Object {
   "format": "pkcs8-pem",
   "keyAlgorithm": Object {
     "id": "rsa-encryption",
-    "parameters": null,
   },
   "keyData": Object {
     "coefficient": Uint8Array [
@@ -1189,7 +1188,6 @@ Object {
   "format": "pkcs8-pem",
   "keyAlgorithm": Object {
     "id": "rsa-encryption",
-    "parameters": null,
   },
   "keyData": Object {
     "coefficient": Uint8Array [
@@ -2372,7 +2370,6 @@ Object {
   "format": "pkcs8-pem",
   "keyAlgorithm": Object {
     "id": "rsa-encryption",
-    "parameters": null,
   },
   "keyData": Object {
     "coefficient": Uint8Array [
@@ -3555,7 +3552,6 @@ Object {
   "format": "pkcs8-pem",
   "keyAlgorithm": Object {
     "id": "rsa-encryption",
-    "parameters": null,
   },
   "keyData": Object {
     "coefficient": Uint8Array [
@@ -4775,7 +4771,6 @@ Object {
   "format": "pkcs8-pem",
   "keyAlgorithm": Object {
     "id": "rsa-encryption",
-    "parameters": null,
   },
   "keyData": Object {
     "coefficient": Uint8Array [

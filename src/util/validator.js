@@ -55,7 +55,6 @@ export const validateDecomposedKey = (decomposedKey, supportedFormats) => {
 
     decomposedKey = { ...decomposedKey };
     decomposedKey.format = validateFormat(decomposedKey.format, supportedFormats);
-
     decomposedKey.keyAlgorithm = validateAlgorithmIdentifier(keyAlgorithm, 'key algorithm');
 
     if (!isPlainObject(decomposedKey.keyData)) {

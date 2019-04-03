@@ -1,20 +1,42 @@
-import { OIDS, FLIPPED_OIDS } from './oids';
 import { CurvePrivateKey } from './asn1-entities';
 import { decomposeRsaPrivateKey, composeRsaPrivateKey } from '../pkcs1/keys';
+import { OIDS, FLIPPED_OIDS } from '../../util/oids';
 import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
-import { uint8ArrayToHexString, hexStringToUint8Array } from '../../util/binary';
+import { hexStringToUint8Array } from '../../util/binary';
 import { UnsupportedAlgorithmError } from '../../util/errors';
 import KEY_TYPES from '../../util/key-types';
 
 const decomposeRsaPrivateKeyInfo = (privateKeyInfo) => {
     const { privateKeyAlgorithm, privateKey: privateKeyAsn1 } = privateKeyInfo;
 
+    const keyAlgorithm = { id: OIDS[privateKeyAlgorithm.id] };
+
+    switch (keyAlgorithm.id) {
+    case 'rsa-encryption':
+    case 'md2-with-rsa-encryption':
+    case 'md4-with-rsa-encryption':
+    case 'md5-with-rsa-encryption':
+    case 'sha1-with-rsa-encryption':
+    case 'sha224-with-rsa-encryption':
+    case 'sha256-with-rsa-encryption':
+    case 'sha384-with-rsa-encryption':
+    case 'sha512-with-rsa-encryption':
+    case 'sha512-224-with-rsa-encryption':
+    case 'sha512-256-with-rsa-encryption':
+        break;
+    case 'rsaes-oaep':
+        throw new UnsupportedAlgorithmError('RSA-OAEP keys are not yet supported');
+    case 'rsassa-pss':
+        throw new UnsupportedAlgorithmError('RSA-PSS keys are not yet supported');
+    default:
+        throw new UnsupportedAlgorithmError(`Unsupported key algorithm OID '${privateKeyAlgorithm.id}`);
+    }
+
     const { keyData } = decomposeRsaPrivateKey(privateKeyAsn1);
 
     return {
         keyAlgorithm: {
             id: OIDS[privateKeyAlgorithm.id],
-            parameters: uint8ArrayToHexString(privateKeyAlgorithm.parameters) === '0500' ? null : privateKeyAlgorithm.parameters,
         },
         keyData,
     };
@@ -27,7 +49,7 @@ const composeRsaPrivateKeyInfo = (keyAlgorithm, keyData) => {
         version: 0,
         privateKeyAlgorithm: {
             id: FLIPPED_OIDS[keyAlgorithm.id],
-            parameters: keyAlgorithm.parameters || hexStringToUint8Array('0500'),
+            parameters: hexStringToUint8Array('0500'),
         },
         privateKey: rsaPrivateKeyAsn1,
     };

@@ -1,6 +1,7 @@
 /* eslint-disable babel/no-invalid-this, newline-per-chained-call */
 import { Buffer } from 'buffer';
 import asn1 from '@lordvlad/asn1.js';
+import { FLIPPED_OIDS } from '../../util/oids';
 
 // Ensure that all asn1 objid are returned as strings separated with '.'
 // See https://github.com/indutny/asn1.js/blob/b99ce086320e0123331e6272f6de75548c6855fa/lib/asn1/decoders/der.js#L198
@@ -22,13 +23,6 @@ export const AlgorithmIdentifier = asn1.define('AlgorithmIdentifier', function (
     );
 });
 
-export const PublicKeyInfo = asn1.define('PublicKeyInfo', function () {
-    this.seq().obj(
-        this.key('algorithm').use(AlgorithmIdentifier),
-        this.key('publicKey').octstr()
-    );
-});
-
 // This is actually a OneAsymmetricKey, defined in https://tools.ietf.org/html/rfc8410
 export const PrivateKeyInfo = asn1.define('PrivateKeyInfo', function () {
     this.seq().obj(
@@ -47,14 +41,14 @@ export const EncryptedPrivateKeyInfo = asn1.define('EncryptedPrivateKeyInfo', fu
     );
 });
 
-export const PBES2Algorithms = asn1.define('PBES2Algorithms', function () {
+export const Pbes2Algorithms = asn1.define('PBES2Algorithms', function () {
     this.seq().obj(
         this.key('keyDerivationFunc').use(AlgorithmIdentifier),
         this.key('encryptionScheme').use(AlgorithmIdentifier),
     );
 });
 
-export const PBES2ESParams = {
+export const Pbes2EsParams = {
     'des-cbc': asn1.define('desCBC', function () { this.octstr(); }),
     'des-ede3-cbc': asn1.define('des-EDE3-CBC', function () { this.octstr(); }),
     'aes128-cbc': asn1.define('aes128-CBC', function () { this.octstr(); }),
@@ -62,7 +56,7 @@ export const PBES2ESParams = {
     'aes256-cbc': asn1.define('aes256-CBC', function () { this.octstr(); }),
 };
 
-export const PBKDF2params = asn1.define('PBKDF2-params', function () {
+export const Pbkdf2Params = asn1.define('PBKDF2-params', function () {
     this.seq().obj(
         this.key('salt').choice({
             specified: this.octstr(),
@@ -71,13 +65,13 @@ export const PBKDF2params = asn1.define('PBKDF2-params', function () {
         this.key('iterationCount').int(),
         this.key('keyLength').int().optional(),
         this.key('prf').use(AlgorithmIdentifier).def({
-            id: '1.2.840.113549.2.7', // hmacWithSHA1
+            id: FLIPPED_OIDS['hmac-with-sha1'],
             parameters: Buffer.from([0x05, 0x00]),
         })
     );
 });
 
-export const RC2CBCParameter = asn1.define('RC2-CBC-Parameter', function () {
+export const Rc2CbcParameter = asn1.define('RC2-CBC-Parameter', function () {
     this.seq().obj(
         this.key('rc2ParameterVersion').int().optional(),
         this.key('iv').octstr()

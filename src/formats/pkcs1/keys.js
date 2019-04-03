@@ -1,9 +1,9 @@
-import { RSAPrivateKey } from './asn1-entities';
+import { RsaPrivateKey } from './asn1-entities';
 import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
 import { uint8ArrayToInteger } from '../../util/binary';
 
 export const decomposeRsaPrivateKey = (rsaPrivateKeyAsn1) => {
-    const { version, ...keyData } = decodeAsn1(rsaPrivateKeyAsn1, RSAPrivateKey);
+    const { version, ...keyData } = decodeAsn1(rsaPrivateKeyAsn1, RsaPrivateKey);
 
     return {
         keyAlgorithm: {
@@ -27,5 +27,5 @@ export const composeRsaPrivateKey = (rsaKeyData) => {
         otherPrimeInfos: hasMultiplePrimes ? otherPrimeInfos : undefined,
     };
 
-    return encodeAsn1(rsaPrivateKey, RSAPrivateKey);
+    return encodeAsn1(rsaPrivateKey, RsaPrivateKey);
 };

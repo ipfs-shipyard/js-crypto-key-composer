@@ -7,13 +7,14 @@ export const OIDS = {
     '1.2.840.113549.1.1.3': 'md4-with-rsa-encryption',
     '1.2.840.113549.1.1.4': 'md5-with-rsa-encryption',
     '1.2.840.113549.1.1.5': 'sha1-with-rsa-encryption',
-    '1.2.840.113549.1.1.7': 'rsaes-oaep',
-    '1.2.840.113549.1.1.8': 'mgf1',
-    '1.2.840.113549.1.1.9': 'p-specified',
-    '1.2.840.113549.1.1.10': 'rsassa-pss',
+    '1.2.840.113549.1.1.14': 'sha224-with-rsa-encryption',
     '1.2.840.113549.1.1.11': 'sha256-with-rsa-encryption',
     '1.2.840.113549.1.1.12': 'sha384-with-rsa-encryption',
     '1.2.840.113549.1.1.13': 'sha512-with-rsa-encryption',
+    '1.2.840.113549.1.1.15': 'sha512-224-with-rsa-encryption',
+    '1.2.840.113549.1.1.16': 'sha512-256-with-rsa-encryption',
+    '1.2.840.113549.1.1.7': 'rsaes-oaep',
+    '1.2.840.113549.1.1.10': 'rsassa-pss',
 
     // Ed25519
     '1.3.101.112': 'ed25519',

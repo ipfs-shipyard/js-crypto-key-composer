@@ -9,7 +9,7 @@ export const OtherPrimeInfo = asn1.define('OtherPrimeInfo', function () {
     );
 });
 
-export const RSAPrivateKey = asn1.define('RSAPrivateKey', function () {
+export const RsaPrivateKey = asn1.define('RSAPrivateKey', function () {
     this.seq().obj(
         this.key('version').int(),
         this.key('modulus').int(),

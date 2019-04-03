@@ -1,5 +1,5 @@
-import { OIDS, FLIPPED_OIDS } from './oids';
-import { EncryptedPrivateKeyInfo, PBES2Algorithms, PBKDF2params, PBES2ESParams, RC2CBCParameter } from './asn1-entities';
+import { EncryptedPrivateKeyInfo, Pbes2Algorithms, Pbkdf2Params, Pbes2EsParams, Rc2CbcParameter } from './asn1-entities';
+import { OIDS, FLIPPED_OIDS } from '../../util/oids';
 import { encryptWithPassword, decryptWithPassword } from '../../util/pbe';
 import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
 import { uint8ArrayToInteger, hexStringToUint8Array } from '../../util/binary';
@@ -7,7 +7,7 @@ import { UnsupportedAlgorithmError, DecodeAsn1FailedError, MissingPasswordError 
 import { validateEncryptionAlgorithm } from '../../util/validator';
 
 export const decryptWithPBES2 = (encryptedData, encryptionAlgorithmParamsAsn1, password) => {
-    const { keyDerivationFunc, encryptionScheme } = decodeAsn1(encryptionAlgorithmParamsAsn1, PBES2Algorithms);
+    const { keyDerivationFunc, encryptionScheme } = decodeAsn1(encryptionAlgorithmParamsAsn1, Pbes2Algorithms);
 
     const keyDerivationFuncId = OIDS[keyDerivationFunc.id];
     const encryptionSchemeId = OIDS[encryptionScheme.id];
@@ -21,10 +21,10 @@ export const decryptWithPBES2 = (encryptedData, encryptionAlgorithmParamsAsn1, p
     case 'aes256-cbc':
     case 'des-ede3-cbc':
     case 'des-cbc':
-        effectiveEncryptionScheme.iv = decodeAsn1(encryptionScheme.parameters, PBES2ESParams[encryptionSchemeId]);
+        effectiveEncryptionScheme.iv = decodeAsn1(encryptionScheme.parameters, Pbes2EsParams[encryptionSchemeId]);
         break;
     case 'rc2-cbc': {
-        const rc2CBCParameter = decodeAsn1(encryptionScheme.parameters, RC2CBCParameter);
+        const rc2CBCParameter = decodeAsn1(encryptionScheme.parameters, Rc2CbcParameter);
         const rc2ParameterVersion = uint8ArrayToInteger(rc2CBCParameter.rc2ParameterVersion);
 
         effectiveEncryptionScheme.iv = rc2CBCParameter.iv;
@@ -53,7 +53,7 @@ export const decryptWithPBES2 = (encryptedData, encryptionAlgorithmParamsAsn1, p
     // Process key derivation func
     switch (keyDerivationFuncId) {
     case 'pbkdf2': {
-        const pbkdf2Params = decodeAsn1(keyDerivationFunc.parameters, PBKDF2params);
+        const pbkdf2Params = decodeAsn1(keyDerivationFunc.parameters, Pbkdf2Params);
         const prfId = OIDS[pbkdf2Params.prf.id];
 
         if (pbkdf2Params.salt.type !== 'specified') {
@@ -106,7 +106,7 @@ export const encryptWithPBES2 = (data, encryptionAlgorithm, password) => {
     case 'aes256-cbc':
     case 'des-ede3-cbc':
     case 'des-cbc':
-        encodeEncryptionSchemeAsn1ParamsFn = ({ iv }) => encodeAsn1(iv, PBES2ESParams[encryptionScheme.id]);
+        encodeEncryptionSchemeAsn1ParamsFn = ({ iv }) => encodeAsn1(iv, Pbes2EsParams[encryptionScheme.id]);
         break;
     case 'rc2-cbc':
         encodeEncryptionSchemeAsn1ParamsFn = ({ iv, bits }) => {
@@ -128,7 +128,7 @@ export const encryptWithPBES2 = (data, encryptionAlgorithm, password) => {
                 throw new UnsupportedAlgorithmError(`Unsupported RC2 bits parameter with value '${rc2ParameterVersion}'`);
             }
 
-            return encodeAsn1({ iv, rc2ParameterVersion }, RC2CBCParameter);
+            return encodeAsn1({ iv, rc2ParameterVersion }, Rc2CbcParameter);
         };
         break;
     default:
@@ -146,7 +146,7 @@ export const encryptWithPBES2 = (data, encryptionAlgorithm, password) => {
                 id: FLIPPED_OIDS[prf],
                 parameters: hexStringToUint8Array('0500'),
             },
-        }, PBKDF2params);
+        }, Pbkdf2Params);
         break;
     default:
         throw new UnsupportedAlgorithmError(`Unsupported key derivation function id '${keyDerivationFunc.id}'`);
@@ -163,7 +163,7 @@ export const encryptWithPBES2 = (data, encryptionAlgorithm, password) => {
             id: FLIPPED_OIDS[encryptionScheme.id],
             parameters: encodeEncryptionSchemeAsn1ParamsFn(effectiveEncryptionAlgorithm.encryptionScheme),
         },
-    }, PBES2Algorithms);
+    }, Pbes2Algorithms);
 
     return {
         encryptionAlgorithmParamsAsn1,
