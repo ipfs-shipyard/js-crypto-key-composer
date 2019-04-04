@@ -102,9 +102,14 @@ describe('composePrivateKey', () => {
     });
 
     it('should support the \'rsa\' alias as the key algorithm', () => {
-        const decomposedKey = decomposePrivateKey(KEYS['rsa-1'], { format: 'pkcs1-der' });
-        const composedKey = composePrivateKey({ ...decomposedKey, keyAlgorithm: 'rsa' });
+        const decomposedKey1 = decomposePrivateKey(KEYS['rsa-1'], { format: 'pkcs1-der' });
+        const composedKey1 = composePrivateKey({ ...decomposedKey1, keyAlgorithm: 'rsa' });
 
-        expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['rsa-1']));
+        expect(composedKey1).toEqual(typedArrayToUint8Array(KEYS['rsa-1']));
+
+        const decomposedKey2 = decomposePrivateKey(KEYS['rsa-1'], { format: 'pkcs1-der' });
+        const composedKey2 = composePrivateKey({ ...decomposedKey2, keyAlgorithm: { id: 'rsa' } });
+
+        expect(composedKey2).toEqual(typedArrayToUint8Array(KEYS['rsa-1']));
     });
 });

@@ -56,6 +56,7 @@ const composeRsaPrivateKeyInfo = (keyAlgorithm, keyData) => {
 };
 
 const decomposeEd25519PrivateKeyInfo = (privateKeyInfo) => {
+    // See: https://tools.ietf.org/html/rfc8032#section-5.1.5
     const { privateKeyAlgorithm, privateKey } = privateKeyInfo;
     const seed = decodeAsn1(privateKey, CurvePrivateKey);
 

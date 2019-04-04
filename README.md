@@ -370,7 +370,7 @@ The key data is the interpreted key contents. Below, you will find the key data 
 }
 ```
 
-The seed is composed of 32 bytes which serves as the basis to derive the 64 bytes private key and the 32 bytes public key.
+The seed is composed of 32 bytes which serves as the basis to derive the 64 bytes private key and the 32 bytes public key. This closely follows what is defined in [RFC 8032](https://tools.ietf.org/html/rfc8032#section-5.1.5).
 </details>
 
 <details><summary><strong>ED25519 public keys</strong></summary>

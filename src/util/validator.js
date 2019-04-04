@@ -51,11 +51,20 @@ export const validateDecomposedKey = (decomposedKey, supportedFormats) => {
         throw new UnexpectedTypeError('Expecting decomposed key to be an object');
     }
 
-    const keyAlgorithm = KEY_ALIASES[decomposedKey.keyAlgorithm] || decomposedKey.keyAlgorithm;
-
     decomposedKey = { ...decomposedKey };
     decomposedKey.format = validateFormat(decomposedKey.format, supportedFormats);
-    decomposedKey.keyAlgorithm = validateAlgorithmIdentifier(keyAlgorithm, 'key algorithm');
+    decomposedKey.keyAlgorithm = validateAlgorithmIdentifier(decomposedKey.keyAlgorithm, 'key algorithm');
+
+    // Allow key algorithm to be an alias
+    const aliasedKeyAlgorithm = KEY_ALIASES[decomposedKey.keyAlgorithm.id];
+
+    if (aliasedKeyAlgorithm) {
+        decomposedKey.keyAlgorithm = {
+            ...aliasedKeyAlgorithm,
+            ...decomposedKey.keyAlgorithm,
+            id: aliasedKeyAlgorithm.id,
+        };
+    }
 
     if (!isPlainObject(decomposedKey.keyData)) {
         throw new UnexpectedTypeError('Expecting key data to be an object');

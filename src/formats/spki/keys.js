@@ -39,7 +39,7 @@ const decomposeRsaSubjectPublicKeyInfo = (subjectPublicKeyInfo) => {
         },
         keyData: {
             ...keyData,
-            // The publicExponent is small, so just transform them to numbers
+            // The publicExponent is small, so just transform it to a number
             publicExponent: uint8ArrayToInteger(keyData.publicExponent),
         },
     };

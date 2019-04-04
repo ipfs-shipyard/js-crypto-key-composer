@@ -86,9 +86,14 @@ describe('composePublicKey', () => {
     });
 
     it('should support the \'rsa\' alias as the key algorithm', () => {
-        const decomposedKey = decomposePublicKey(KEYS['rsa-1'], { format: 'spki-der' });
-        const composedKey = composePublicKey({ ...decomposedKey, keyAlgorithm: 'rsa' });
+        const decomposedKey1 = decomposePublicKey(KEYS['rsa-1'], { format: 'spki-der' });
+        const composedKey1 = composePublicKey({ ...decomposedKey1, keyAlgorithm: 'rsa' });
 
-        expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['rsa-1']));
+        expect(composedKey1).toEqual(typedArrayToUint8Array(KEYS['rsa-1']));
+
+        const decomposedKey2 = decomposePublicKey(KEYS['rsa-1'], { format: 'spki-der' });
+        const composedKey2 = composePublicKey({ ...decomposedKey2, keyAlgorithm: { id: 'rsa' } });
+
+        expect(composedKey2).toEqual(typedArrayToUint8Array(KEYS['rsa-1']));
     });
 });
