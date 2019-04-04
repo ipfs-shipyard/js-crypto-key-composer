@@ -29,7 +29,7 @@ const decomposeRsaPrivateKeyInfo = (privateKeyInfo) => {
     case 'rsassa-pss':
         throw new UnsupportedAlgorithmError('RSA-PSS keys are not yet supported');
     default:
-        throw new UnsupportedAlgorithmError(`Unsupported key algorithm OID '${privateKeyAlgorithm.id}`);
+        throw new UnsupportedAlgorithmError(`Unsupported key algorithm OID '${privateKeyAlgorithm.id}'`);
     }
 
     const { keyData } = decomposeRsaPrivateKey(privateKeyAsn1);

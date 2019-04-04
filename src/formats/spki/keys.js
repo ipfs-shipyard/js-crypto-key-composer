@@ -28,7 +28,7 @@ const decomposeRsaSubjectPublicKeyInfo = (subjectPublicKeyInfo) => {
     case 'rsassa-pss':
         throw new UnsupportedAlgorithmError('RSA-PSS keys are not yet supported');
     default:
-        throw new UnsupportedAlgorithmError(`Unsupported key algorithm OID '${algorithm.id}`);
+        throw new UnsupportedAlgorithmError(`Unsupported key algorithm OID '${algorithm.id}'`);
     }
 
     const keyData = decodeAsn1(publicKeyAsn1.data, RsaPublicKey);
