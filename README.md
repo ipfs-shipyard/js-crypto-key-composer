@@ -42,13 +42,13 @@ Parses a public key, extracting information containing its [`format`](#formats),
 ```js
 import { decomposePrivateKey } from 'crypto-key-composer';
 
-const myPemKey = `
+const myPrivatePemKey = `
 -----BEGIN RSA PRIVATE KEY-----
 ACTUAL KEY BASE64 HERE
 -----END RSA PRIVATE KEY-----
 `
 
-const myDecomposedKey = decomposePrivateKey(myPemKey)
+const myDecomposedPrivateKey = decomposePrivateKey(myPrivatePemKey)
 // {
 //     format: 'pkcs1-pem',
 //     keyAlgorithm: {
@@ -86,7 +86,7 @@ Composes a private key from its parts: [`format`](#formats), [`keyAlgorithm`](#k
 ```js
 import { composePrivateKey } from 'crypto-key-composer';
 
-const myPrivateKey = composePrivateKey({
+const myPrivatePemKey = composePrivateKey({
     format: 'pkcs1-pem',
     keyAlgorithm: {
         id: 'rsa-encryption',
@@ -94,7 +94,8 @@ const myPrivateKey = composePrivateKey({
     keyData: {
         publicExponent: 65537,
         modulus: Uint8Array(...),
-        prime1: Uint8Array(...)
+        prime1: Uint8Array(...),
+        // ...
     }
 });
 ```
@@ -114,15 +115,15 @@ Meaningful [errors](src/util/errors.js) with codes are thrown if something went 
 Parses a public key, extracting information containing its [`format`](#formats), [`keyAlgorithm`](#key-algorithms) and [`keyData`](#key-data).
 
 ```js
-import { decomposePrivateKey } from 'crypto-key-composer';
+import { decomposePublicKey } from 'crypto-key-composer';
 
-const myPemKey = `
------BEGIN RSA PRIVATE KEY-----
+const myPublicPemKey = `
+-----BEGIN PUBLIC KEY-----
 ACTUAL KEY BASE64 HERE
------END RSA PRIVATE KEY-----
+-----END PUBLIC KEY-----
 `
 
-const myDecomposedKey = decomposePrivateKey(myPemKey)
+const myPublicDecomposedKey = decomposePublicKey(myPublicPemKey)
 // {
 //     format: 'pkcs1-pem',
 //     keyAlgorithm: {
@@ -157,7 +158,7 @@ Composes a public key from its parts: [`format`](#formats), [`keyAlgorithm`](#ke
 ```js
 import { composePrivateKey } from 'crypto-key-composer';
 
-const myPrivateKey = composePrivateKey({
+const myPublicPemKey = composePrivateKey({
     format: 'pkcs1-pem',
     keyAlgorithm: {
         id: 'rsa-encryption',
