@@ -189,6 +189,8 @@ getKeyTypeFromAlgorithm('ed25519')  // ed25519
 
 ### Formats
 
+Below you will find the list of supported formats for private and public keys.
+
 <details><summary><strong>pcks1-der (private)</strong></summary>
 
 The `pkcs1-der` is the DER encoded ASN1 format defined in [RFC 8017](https://tools.ietf.org/html/rfc8017).
@@ -242,7 +244,7 @@ Supported key algorithms:
 - RSA keys
 - ED25519 keys
 
-Supported encryption algorithms: *does not apply* 
+Supported encryption algorithms: *does not apply*
 </details>
 
 <details><summary><strong>spki-pem (public)</strong></summary>
@@ -251,12 +253,12 @@ The `spki-pem` is the PEM encoded version of `spki-der` and is defined in [RFC 1
 
 Supported key algorithms: *same as `spki-der`*
 
-Supported encryption algorithms: *does not apply* 
+Supported encryption algorithms: *does not apply*
 </details>
 
 ### Key Algorithms
 
-The actual supported key algorithms vary from format to format. Be sure to check the list of supported key algorithms for each format in the the [Formats](#formats) section.
+Below you will find the list of supported key algorithms. Because the actual supported key algorithms vary from format to format, be sure to also check the [Formats](#formats) section.
 
 <details><summary><strong>RSA keys</strong></summary>
 
@@ -317,6 +319,8 @@ Because there's no parameters, the example above may also be expressed like so:
 </details>
 
 ### Key Data
+
+The key data is the interpreted key contents. Below, you will find the key data structure for each key type.
 
 <details><summary><strong>RSA private keys</strong></summary>
 
@@ -383,11 +387,9 @@ The seed is composed of 32 bytes which serves as the basis to derive the 64 byte
 
 ### Encryption Algorithms
 
-The actual supported encryption algorithms vary from format to format. Be sure to check the list of supported encryption algorithms for each format in the the [Formats](#formats) section.
+The encryption algorithm only apply for private keys and is composed by two parts: **Key Derivation Function** and the **Encryption Scheme**. Below you will find the supported algorithms for these parts. Because the actual supported encryption algorithms vary from format to format, be sure to also check the [Formats](#formats) section.
 
-The encryption algorithm is composed by two parts: the `keyDerivationFunc` and the `encryptionScheme`.
-
-#### Key derivation functions
+#### Key Derivation Function
 
 <details><summary><strong>OpenSSL derive bytes</strong></summary>
    
@@ -448,7 +450,7 @@ The parameters above are the default ones and may be omited if you don't need to
 The supported `prf` values are `hmac-with-sha512` (default), `hmac-with-sha384`, `hmac-with-sha256` and `hmac-with-sha1`.
 </details>
 
-#### Encryption scheme
+#### Encryption Scheme
 
 <details><summary><strong>AES</strong></summary>
    
