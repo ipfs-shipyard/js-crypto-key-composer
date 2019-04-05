@@ -239,7 +239,7 @@ Supported encryption algorithms: *same as `pkcs8-der`*
 
 <details><summary><strong>spki-der (public)</strong></summary>
 
-The `pkcs8-pem` is the PEM encoded version of `pkcs8-der` and is defined in [RFC 1421](https://tools.ietf.org/html/rfc1421).
+The `spki-der` is a format to represent various types of public keys and is defined in [RFC 5280](https://tools.ietf.org/html/rfc5280#page-25).
 
 Supported key algorithms:
 - RSA keys
