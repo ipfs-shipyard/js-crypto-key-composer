@@ -1,0 +1,1 @@
+> A PKCS8-DER key with an invalid encryption algorithm OID (manually crafted)

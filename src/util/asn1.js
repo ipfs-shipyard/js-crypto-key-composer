@@ -1,8 +1,26 @@
 import deepForEach from 'deep-for-each';
 import cloneDeep from 'clone-deep';
+import asn1 from '@lordvlad/asn1.js';
 import { Buffer } from 'buffer';
 import { typedArrayToUint8Array, bnToUint8Array } from './binary';
 import { EncodeAsn1FailedError, DecodeAsn1FailedError } from './errors';
+
+// Ensure that all asn1 objid are returned as strings separated with '.'
+// See https://github.com/indutny/asn1.js/blob/b99ce086320e0123331e6272f6de75548c6855fa/lib/asn1/decoders/der.js#L198
+// See https://github.com/indutny/asn1.js/blob/b99ce086320e0123331e6272f6de75548c6855fa/lib/asn1/encoders/der.js#L103
+export const objidValues = new Proxy({}, {
+    get: (obj, key) => {
+        if (key === 'hasOwnProperty') {
+            return (key) => key.indexOf('.') > 0;
+        }
+
+        return key.indexOf('.') > 0 ? key : undefined;
+    },
+});
+
+/* eslint-disable babel/no-invalid-this*/
+export const define = (name, fn) => asn1.define(name, function () { fn(this); });
+/* eslint-enable babel/no-invalid-this*/
 
 export const decodeAsn1 = (encodedEntity, Model) => {
     let decodedEntity;

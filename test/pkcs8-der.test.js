@@ -7,31 +7,34 @@ const KEYS = {
     'rsa-2': fs.readFileSync('test/fixtures/pkcs8-der/rsa-2'),
     'rsa-3': fs.readFileSync('test/fixtures/pkcs8-der/rsa-3'),
     'rsa-4': fs.readFileSync('test/fixtures/pkcs8-der/rsa-4'),
-    'rsa-5': fs.readFileSync('test/fixtures/pkcs8-der/rsa-5'),
-    'rsa-6': fs.readFileSync('test/fixtures/pkcs8-der/rsa-6'),
-    'rsa-7': fs.readFileSync('test/fixtures/pkcs8-der/rsa-7'),
-    'rsa-8': fs.readFileSync('test/fixtures/pkcs8-der/rsa-8'),
-    'rsa-9': fs.readFileSync('test/fixtures/pkcs8-der/rsa-9'),
-    'rsa-10': fs.readFileSync('test/fixtures/pkcs8-der/rsa-10'),
-    'rsa-11': fs.readFileSync('test/fixtures/pkcs8-der/rsa-11'),
-    'rsa-12': fs.readFileSync('test/fixtures/pkcs8-der/rsa-12'),
-    'rsa-13': fs.readFileSync('test/fixtures/pkcs8-der/rsa-13'),
-    'rsa-14': fs.readFileSync('test/fixtures/pkcs8-der/rsa-14'),
-    'rsa-15': fs.readFileSync('test/fixtures/pkcs8-der/rsa-15'),
     'ed25519-1': fs.readFileSync('test/fixtures/pkcs8-der/ed25519-1'),
+    'ed25519-2': fs.readFileSync('test/fixtures/pkcs8-der/ed25519-2'),
     'invalid-1': fs.readFileSync('test/fixtures/pkcs8-der/invalid-1'),
-    'invalid-2': fs.readFileSync('test/fixtures/pkcs8-der/invalid-2'),
-    'invalid-3': fs.readFileSync('test/fixtures/pkcs8-der/invalid-3'),
-    'invalid-4': fs.readFileSync('test/fixtures/pkcs8-der/invalid-4'),
-    'invalid-5': fs.readFileSync('test/fixtures/pkcs8-der/invalid-5'),
-    'invalid-6': fs.readFileSync('test/fixtures/pkcs8-der/invalid-6'),
-    'invalid-7': fs.readFileSync('test/fixtures/pkcs8-der/invalid-7'),
+    'enc-1': fs.readFileSync('test/fixtures/pkcs8-der/enc-1'),
+    'enc-2': fs.readFileSync('test/fixtures/pkcs8-der/enc-2'),
+    'enc-3': fs.readFileSync('test/fixtures/pkcs8-der/enc-3'),
+    'enc-4': fs.readFileSync('test/fixtures/pkcs8-der/enc-4'),
+    'enc-5': fs.readFileSync('test/fixtures/pkcs8-der/enc-5'),
+    'enc-6': fs.readFileSync('test/fixtures/pkcs8-der/enc-6'),
+    'enc-7': fs.readFileSync('test/fixtures/pkcs8-der/enc-7'),
+    'enc-8': fs.readFileSync('test/fixtures/pkcs8-der/enc-8'),
+    'enc-9': fs.readFileSync('test/fixtures/pkcs8-der/enc-9'),
+    'enc-10': fs.readFileSync('test/fixtures/pkcs8-der/enc-10'),
+    'enc-11': fs.readFileSync('test/fixtures/pkcs8-der/enc-11'),
+    'enc-12': fs.readFileSync('test/fixtures/pkcs8-der/enc-12'),
+    'enc-13': fs.readFileSync('test/fixtures/pkcs8-der/enc-13'),
+    'enc-invalid-1': fs.readFileSync('test/fixtures/pkcs8-der/enc-invalid-1'),
+    'enc-invalid-2': fs.readFileSync('test/fixtures/pkcs8-der/enc-invalid-2'),
+    'enc-invalid-3': fs.readFileSync('test/fixtures/pkcs8-der/enc-invalid-3'),
+    'enc-invalid-4': fs.readFileSync('test/fixtures/pkcs8-der/enc-invalid-4'),
+    'enc-invalid-5': fs.readFileSync('test/fixtures/pkcs8-der/enc-invalid-5'),
+    'enc-invalid-6': fs.readFileSync('test/fixtures/pkcs8-der/enc-invalid-6'),
 };
 
 const password = 'password';
 
 describe('decomposePrivateKey', () => {
-    it('should decompose a standard RSA key', () => {
+    it('should decompose a RSA key', () => {
         expect(decomposePrivateKey(KEYS['rsa-1'], { format: 'pkcs8-der' })).toMatchSnapshot();
     });
 
@@ -43,8 +46,16 @@ describe('decomposePrivateKey', () => {
         expect(decomposePrivateKey(KEYS['rsa-3'], { format: 'pkcs8-der' })).toMatchSnapshot();
     });
 
-    it('should decompose a ed25519 key', () => {
+    it('should decompose an encrypted RSA key', () => {
+        expect(decomposePrivateKey(KEYS['rsa-4'], { format: 'pkcs8-der', password })).toMatchSnapshot();
+    });
+
+    it('should decompose ED25519 key', () => {
         expect(decomposePrivateKey(KEYS['ed25519-1'], { format: 'pkcs8-der' })).toMatchSnapshot();
+    });
+
+    it('should decompose an encrypted ED25519 key', () => {
+        expect(decomposePrivateKey(KEYS['ed25519-2'], { format: 'pkcs8-der', password })).toMatchSnapshot();
     });
 
     it('should also support Uint8Array, ArrayBuffer and string besides Node\'s Buffer', () => {
@@ -77,58 +88,76 @@ describe('decomposePrivateKey', () => {
         }
     });
 
-    describe('decryption', () => {
-        it('should decompose a RSA key encrypted with pbes2+pbkdf2+aes128-cbc', () => {
-            expect(decomposePrivateKey(KEYS['rsa-4'], { format: 'pkcs8-der', password })).toMatchSnapshot();
+    describe('decryption algorithms', () => {
+        it('should decompose key encrypted with pbes2+pbkdf2+aes128-cbc', () => {
+            expect(decomposePrivateKey(KEYS['enc-1'], { format: 'pkcs8-der', password })).toMatchSnapshot();
         });
 
-        it('should decompose a RSA key encrypted with pbes2+pbkdf2+aes192-cbc', () => {
-            expect(decomposePrivateKey(KEYS['rsa-5'], { format: 'pkcs8-der', password })).toMatchSnapshot();
+        it('should decompose key encrypted with pbes2+pbkdf2+aes192-cbc', () => {
+            expect(decomposePrivateKey(KEYS['enc-2'], { format: 'pkcs8-der', password })).toMatchSnapshot();
         });
 
-        it('should decompose a RSA key encrypted with pbes2+pbkdf2+aes256-cbc', () => {
-            expect(decomposePrivateKey(KEYS['rsa-6'], { format: 'pkcs8-der', password })).toMatchSnapshot();
+        it('should decompose key encrypted with pbes2+pbkdf2+aes256-cbc', () => {
+            expect(decomposePrivateKey(KEYS['enc-3'], { format: 'pkcs8-der', password })).toMatchSnapshot();
         });
 
-        it('should decompose a RSA key encrypted with pbes2+pbkdf2+rc2 40 bits', () => {
-            expect(decomposePrivateKey(KEYS['rsa-7'], { format: 'pkcs8-der', password })).toMatchSnapshot();
+        it('should decompose key encrypted with pbes2+pbkdf2+rc2 40 bits', () => {
+            expect(decomposePrivateKey(KEYS['enc-4'], { format: 'pkcs8-der', password })).toMatchSnapshot();
         });
 
-        it('should decompose a RSA key encrypted with pbes2+pbkdf2+rc2 64 bits', () => {
-            expect(decomposePrivateKey(KEYS['rsa-8'], { format: 'pkcs8-der', password })).toMatchSnapshot();
+        it('should decompose key encrypted with pbes2+pbkdf2+rc2 64 bits', () => {
+            expect(decomposePrivateKey(KEYS['enc-5'], { format: 'pkcs8-der', password })).toMatchSnapshot();
         });
 
-        it('should decompose a RSA key encrypted with pbes2+pbkdf2+rc2 128 bits', () => {
-            expect(decomposePrivateKey(KEYS['rsa-9'], { format: 'pkcs8-der', password })).toMatchSnapshot();
+        it('should decompose key encrypted with pbes2+pbkdf2+rc2 128 bits', () => {
+            expect(decomposePrivateKey(KEYS['enc-6'], { format: 'pkcs8-der', password })).toMatchSnapshot();
         });
 
         it('should fail if the rc2 parameter version in pbes2+pbkdf2+rc2 is not supported', () => {
             expect.assertions(2);
 
             try {
-                decomposePrivateKey(KEYS['invalid-5'], { format: 'pkcs8-der', password });
+                decomposePrivateKey(KEYS['enc-invalid-4'], { format: 'pkcs8-der', password });
             } catch (err) {
                 expect(err.message).toBe('Unsupported RC2 version parameter with value \'1\'');
                 expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
             }
         });
 
-        it('should decompose a RSA key encrypted with pbes2+pbkdf2+des-ede3-cbc', () => {
-            expect(decomposePrivateKey(KEYS['rsa-11'], { format: 'pkcs8-der', password })).toMatchSnapshot();
+        it('should decompose key encrypted with pbes2+pbkdf2+des-cbc', () => {
+            expect(decomposePrivateKey(KEYS['enc-7'], { format: 'pkcs8-der', password })).toMatchSnapshot();
         });
 
-        it('should decompose a RSA key encrypted with all other PBKDF2 prf variants', () => {
-            expect(decomposePrivateKey(KEYS['rsa-12'], { format: 'pkcs8-der', password })).toMatchSnapshot('sha1');
-            // expect(decomposePrivateKey(KEYS['rsa-13'], { format: 'pkcs8-der', password })).toMatchSnapshot();
-            expect(decomposePrivateKey(KEYS['rsa-14'], { format: 'pkcs8-der', password })).toMatchSnapshot('sha384');
-            expect(decomposePrivateKey(KEYS['rsa-15'], { format: 'pkcs8-der', password })).toMatchSnapshot('sha512');
+        it('should decompose key encrypted with pbes2+pbkdf2+des-ede3-cbc', () => {
+            expect(decomposePrivateKey(KEYS['enc-8'], { format: 'pkcs8-der', password })).toMatchSnapshot();
+        });
+
+        it('should decompose key encrypted with PBKDF2 prf SHA1 variant', () => {
+            expect(decomposePrivateKey(KEYS['enc-9'], { format: 'pkcs8-der', password })).toMatchSnapshot('sha1');
+        });
+
+        it.skip('should decompose key encrypted with PBKDF2 prf SHA224 variant', () => {
+            // See: https://github.com/digitalbazaar/forge/issues/669
+            expect(decomposePrivateKey(KEYS['enc-10'], { format: 'pkcs8-der', password })).toMatchSnapshot('sha224');
+        });
+
+        it('should decompose key encrypted with PBKDF2 prf SHA256 variant', () => {
+            expect(decomposePrivateKey(KEYS['enc-11'], { format: 'pkcs8-der', password })).toMatchSnapshot('sha256');
+        });
+
+        it('should decompose key encrypted with PBKDF2 prf SHA384 variant', () => {
+            expect(decomposePrivateKey(KEYS['enc-12'], { format: 'pkcs8-der', password })).toMatchSnapshot('sha384');
+        });
+
+        it('should decompose key encrypted with PBKDF2 prf SHA512 variant', () => {
+            expect(decomposePrivateKey(KEYS['enc-13'], { format: 'pkcs8-der', password })).toMatchSnapshot('sha512');
         });
 
         it('should fail if the key derivation func prf in the PBES2 encryption algorithm is not supported', () => {
             expect.assertions(2);
 
             try {
-                decomposePrivateKey(KEYS['invalid-7'], { format: 'pkcs8-der', password });
+                decomposePrivateKey(KEYS['enc-invalid-5'], { format: 'pkcs8-der', password });
             } catch (err) {
                 expect(err.message).toBe('Unsupported prf algorithm OID \'0.20.999\'');
                 expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
@@ -139,7 +168,7 @@ describe('decomposePrivateKey', () => {
             expect.assertions(2);
 
             try {
-                decomposePrivateKey(KEYS['invalid-2'], { format: 'pkcs8-der', password });
+                decomposePrivateKey(KEYS['enc-invalid-1'], { format: 'pkcs8-der', password });
             } catch (err) {
                 expect(err.message).toBe('Unsupported key derivation function algorithm OID \'0.20.999\'');
                 expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
@@ -150,7 +179,7 @@ describe('decomposePrivateKey', () => {
             expect.assertions(2);
 
             try {
-                decomposePrivateKey(KEYS['invalid-3'], { format: 'pkcs8-der', password });
+                decomposePrivateKey(KEYS['enc-invalid-2'], { format: 'pkcs8-der', password });
             } catch (err) {
                 expect(err.message).toBe('Unsupported encryption scheme algorithm OID \'0.20.999\'');
                 expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
@@ -161,18 +190,18 @@ describe('decomposePrivateKey', () => {
             expect.assertions(2);
 
             try {
-                decomposePrivateKey(KEYS['invalid-4'], { format: 'pkcs8-der', password });
+                decomposePrivateKey(KEYS['enc-invalid-3'], { format: 'pkcs8-der', password });
             } catch (err) {
                 expect(err.message).toBe('Unsupported encryption algorithm OID \'0.20.999\'');
                 expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
             }
         });
 
-        it('should fail to decompose an encrypted RSA key without suplying a password', () => {
+        it('should fail to decompose an encrypted key without suplying a password', () => {
             expect.assertions(2);
 
             try {
-                decomposePrivateKey(KEYS['rsa-4'], { format: 'pkcs8-der' });
+                decomposePrivateKey(KEYS['enc-1'], { format: 'pkcs8-der' });
             } catch (err) {
                 expect(err.message).toBe('Please specify the password to decrypt the key');
                 expect(err.code).toBe('MISSING_PASSWORD');
@@ -183,18 +212,18 @@ describe('decomposePrivateKey', () => {
             expect.assertions(2);
 
             try {
-                decomposePrivateKey(KEYS['invalid-6'], { format: 'pkcs8-der', password });
+                decomposePrivateKey(KEYS['enc-invalid-6'], { format: 'pkcs8-der', password });
             } catch (err) {
                 expect(err.message).toBe('Failed to decode PrivateKeyInfo');
-                expect(err.code).toBe('DECODE_ASN1_FAILED');
+                expect(err.code).toBe('INVALID_INPUT_KEY');
             }
         });
 
-        it('should fail to decompose an encrypted RSA key with the wrong password', () => {
+        it('should fail to decompose an encrypted key with the wrong password', () => {
             expect.assertions(2);
 
             try {
-                decomposePrivateKey(KEYS['rsa-4'], {
+                decomposePrivateKey(KEYS['enc-1'], {
                     format: 'pkcs8-der',
                     password: 'foo',
                 });
@@ -207,7 +236,7 @@ describe('decomposePrivateKey', () => {
 });
 
 describe('composePrivateKey', () => {
-    it('should compose a standard RSA key (mirroring)', () => {
+    it('should compose a RSA key (mirroring)', () => {
         const decomposedKey = decomposePrivateKey(KEYS['rsa-1'], { format: 'pkcs8-der' });
         const composedKey = composePrivateKey(decomposedKey);
 
@@ -228,11 +257,26 @@ describe('composePrivateKey', () => {
         expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['rsa-3']));
     });
 
-    it('should compose a standard ed25519 key', () => {
+    it('should compose an encrypted RSA key (mirroring)', () => {
+        const decomposedKey = decomposePrivateKey(KEYS['rsa-4'], { format: 'pkcs8-der', password });
+        const composedKey = composePrivateKey(decomposedKey, { password });
+
+        expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['rsa-4']));
+    });
+
+    it('should compose ED25519 key', () => {
         const decomposedKey = decomposePrivateKey(KEYS['ed25519-1'], { format: 'pkcs8-der' });
         const composedKey = composePrivateKey(decomposedKey);
 
         expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['ed25519-1']));
+    });
+
+    it('should compose an encrypted ED25519 key (mirroring)', () => {
+        const decomposedKey = decomposePrivateKey(KEYS['ed25519-2'], { format: 'pkcs8-der', password });
+
+        const composedKey = composePrivateKey(decomposedKey, { password });
+
+        expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['ed25519-2']));
     });
 
     it('should fail if the key algorithm is not supported', () => {
@@ -269,51 +313,51 @@ describe('composePrivateKey', () => {
         expect(composedKey2).toEqual(typedArrayToUint8Array(KEYS['rsa-1']));
     });
 
-    describe('encryption', () => {
-        it('should compose a RSA key encrypted with pbes2+pbkdf2+aes128-cbc (mirroring)', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-4'], { format: 'pkcs8-der', password });
+    describe('encryption algorithms', () => {
+        it('should compose an encrypted key with pbes2+pbkdf2+aes128-cbc (mirroring)', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['enc-1'], { format: 'pkcs8-der', password });
             const composedKey = composePrivateKey(decomposedKey, { password });
 
-            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['rsa-4']));
+            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['enc-1']));
         });
 
-        it('should compose a RSA key encrypted with pbes2+pbkdf2+aes192-cbc (mirroring)', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-5'], { format: 'pkcs8-der', password });
+        it('should compose an encrypted key with pbes2+pbkdf2+aes192-cbc (mirroring)', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['enc-2'], { format: 'pkcs8-der', password });
             const composedKey = composePrivateKey(decomposedKey, { password });
 
-            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['rsa-5']));
+            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['enc-2']));
         });
 
-        it('should compose a RSA key encrypted with pbes2+pbkdf2+aes256-cbc (mirroring)', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-6'], { format: 'pkcs8-der', password });
+        it('should compose an encrypted key with pbes2+pbkdf2+aes256-cbc (mirroring)', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['enc-3'], { format: 'pkcs8-der', password });
             const composedKey = composePrivateKey(decomposedKey, { password });
 
-            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['rsa-6']));
+            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['enc-3']));
         });
 
-        it('should compose a RSA key encrypted with pbes2+pbkdf2+rc2 40 bits (mirroring)', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-7'], { format: 'pkcs8-der', password });
+        it('should compose an encrypted key with pbes2+pbkdf2+rc2 40 bits (mirroring)', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['enc-4'], { format: 'pkcs8-der', password });
             const composedKey = composePrivateKey(decomposedKey, { password });
 
-            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['rsa-7']));
+            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['enc-4']));
         });
 
-        it('should compose a RSA key encrypted with pbes2+pbkdf2+rc2 64 bits (mirroring)', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-8'], { format: 'pkcs8-der', password });
+        it('should compose an encrypted key with pbes2+pbkdf2+rc2 64 bits (mirroring)', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['enc-5'], { format: 'pkcs8-der', password });
             const composedKey = composePrivateKey(decomposedKey, { password });
 
-            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['rsa-8']));
+            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['enc-5']));
         });
 
-        it('should compose a RSA key encrypted with pbes2+pbkdf2+rc2 128 bits (mirroring)', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-9'], { format: 'pkcs8-der', password });
+        it('should compose an encrypted key with pbes2+pbkdf2+rc2 128 bits (mirroring)', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['enc-6'], { format: 'pkcs8-der', password });
             const composedKey = composePrivateKey(decomposedKey, { password });
 
-            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['rsa-9']));
+            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['enc-6']));
         });
 
         it('should fail if the bits specified in pbes2+pbkdf2+rc2 is not supported', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-9'], { format: 'pkcs8-der', password });
+            const decomposedKey = decomposePrivateKey(KEYS['enc-6'], { format: 'pkcs8-der', password });
 
             expect.assertions(2);
 
@@ -334,7 +378,7 @@ describe('composePrivateKey', () => {
         });
 
         it('should default to 128 bits for pbes2+pbkdf2+rc2', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-9'], { format: 'pkcs8-der', password });
+            const decomposedKey = decomposePrivateKey(KEYS['enc-6'], { format: 'pkcs8-der', password });
             const composedKey = composePrivateKey({
                 ...decomposedKey,
                 encryptionAlgorithm: {
@@ -350,18 +394,18 @@ describe('composePrivateKey', () => {
             expect(recomposedKey.encryptionAlgorithm.encryptionScheme.bits).toBe(128);
         });
 
-        it('should compose a RSA key encrypted with pbes2+pbkdf2+des-cbc (mirroring)', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-10'], { format: 'pkcs8-der', password });
+        it('should compose an encrypted key with pbes2+pbkdf2+des-cbc (mirroring)', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['enc-7'], { format: 'pkcs8-der', password });
             const composedKey = composePrivateKey(decomposedKey, { password });
 
-            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['rsa-10']));
+            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['enc-7']));
         });
 
-        it('should compose a RSA key encrypted with pbes2+pbkdf2+des-ede3-cbc (mirroring)', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-11'], { format: 'pkcs8-der', password });
+        it('should compose an encrypted key with pbes2+pbkdf2+des-ede3-cbc (mirroring)', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['enc-8'], { format: 'pkcs8-der', password });
             const composedKey = composePrivateKey(decomposedKey, { password });
 
-            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['rsa-11']));
+            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['enc-8']));
         });
 
         it('should default to using pbes2+pbkdf2+aes256-cbc if no encryption algorithm was passed', () => {
@@ -373,17 +417,43 @@ describe('composePrivateKey', () => {
             expect(recomposedKey.encryptionAlgorithm.encryptionScheme.id).toBe('aes256-cbc');
         });
 
-        it('should decompose a RSA key encrypted with all other PBKDF2 prf variants', () => {
-            ['rsa-12', /* 'rsa-13' , */'rsa-14', 'rsa-15'].forEach((keyProp) => {
-                const decomposedKey = decomposePrivateKey(KEYS[keyProp], { format: 'pkcs8-der', password });
-                const composedKey = composePrivateKey(decomposedKey, { password });
+        it('should compose an encrypted key with PBKDF2 prf SHA1 variant (mirroring)', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['enc-9'], { format: 'pkcs8-der', password });
+            const composedKey = composePrivateKey(decomposedKey, { password });
 
-                expect(composedKey).toEqual(typedArrayToUint8Array(KEYS[keyProp]));
-            });
+            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['enc-9']));
+        });
+
+        it.skip('should compose an encrypted key with PBKDF2 prf SHA224 variant (mirroring)', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['enc-10'], { format: 'pkcs8-der', password });
+            const composedKey = composePrivateKey(decomposedKey, { password });
+
+            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['enc-10']));
+        });
+
+        it('should compose an encrypted key with PBKDF2 prf SHA256 variant (mirroring)', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['enc-11'], { format: 'pkcs8-der', password });
+            const composedKey = composePrivateKey(decomposedKey, { password });
+
+            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['enc-11']));
+        });
+
+        it('should compose an encrypted key with PBKDF2 prf SHA384 variant (mirroring)', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['enc-12'], { format: 'pkcs8-der', password });
+            const composedKey = composePrivateKey(decomposedKey, { password });
+
+            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['enc-12']));
+        });
+
+        it('should compose an encrypted key with PBKDF2 prf SHA512 variant (mirroring)', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['enc-13'], { format: 'pkcs8-der', password });
+            const composedKey = composePrivateKey(decomposedKey, { password });
+
+            expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['enc-13']));
         });
 
         it('should fail if the key derivation func prf in the PBES2 encryption algorithm is not supported', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-4'], { format: 'pkcs8-der', password });
+            const decomposedKey = decomposePrivateKey(KEYS['enc-1'], { format: 'pkcs8-der', password });
 
             expect.assertions(2);
 
@@ -407,7 +477,7 @@ describe('composePrivateKey', () => {
         });
 
         it('should fail if the encryption scheme for PBES2 is not supported', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-4'], { format: 'pkcs8-der', password });
+            const decomposedKey = decomposePrivateKey(KEYS['enc-1'], { format: 'pkcs8-der', password });
 
             expect.assertions(2);
 
@@ -428,7 +498,7 @@ describe('composePrivateKey', () => {
         });
 
         it('should fail if the key derivation func for PBES2 is not supported', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-4'], { format: 'pkcs8-der', password });
+            const decomposedKey = decomposePrivateKey(KEYS['enc-1'], { format: 'pkcs8-der', password });
 
             expect.assertions(2);
 
@@ -449,7 +519,7 @@ describe('composePrivateKey', () => {
         });
 
         it('should fail if encryption algorithm was specified without a password', () => {
-            const decomposedKey = decomposePrivateKey(KEYS['rsa-4'], { format: 'pkcs8-der', password });
+            const decomposedKey = decomposePrivateKey(KEYS['enc-1'], { format: 'pkcs8-der', password });
 
             expect.assertions(2);
 

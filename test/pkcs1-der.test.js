@@ -9,7 +9,7 @@ const KEYS = {
 };
 
 describe('decomposePrivateKey', () => {
-    it('should decompose a standard RSA key', () => {
+    it('should decompose a RSA key', () => {
         expect(decomposePrivateKey(KEYS['rsa-1'], { format: 'pkcs1-der' })).toMatchSnapshot();
     });
 
@@ -42,7 +42,7 @@ describe('decomposePrivateKey', () => {
 });
 
 describe('composePrivateKey', () => {
-    it('should compose a standard RSA key (mirroring)', () => {
+    it('should compose a RSA key (mirroring)', () => {
         const decomposedKey = decomposePrivateKey(KEYS['rsa-1'], { format: 'pkcs1-der' });
         const composedKey = composePrivateKey(decomposedKey);
 
@@ -89,7 +89,7 @@ describe('composePrivateKey', () => {
                 keyData: {},
             });
         } catch (err) {
-            expect(err.message).toBe('PKCS1 keys do not support any kind of encryption');
+            expect(err.message).toBe('The PKCS1 DER format does not support encryption');
             expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
         }
     });

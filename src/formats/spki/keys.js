@@ -1,9 +1,10 @@
-import { RsaPublicKey } from './asn1-entities';
-import { OIDS, FLIPPED_OIDS } from '../../util/oids';
+import { EcParameters } from './asn1-entities';
+import { decomposeRsaPublicKey, composeRsaPublicKey } from '../raw/keys';
 import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
-import { hexStringToUint8Array, uint8ArrayToInteger } from '../../util/binary';
+import { OIDS, FLIPPED_OIDS } from '../../util/oids';
+import { hexStringToUint8Array } from '../../util/binary';
 import { UnsupportedAlgorithmError } from '../../util/errors';
-import KEY_TYPES from '../../util/key-types';
+import { KEY_TYPES } from '../../util/key-types';
 
 const decomposeRsaSubjectPublicKeyInfo = (subjectPublicKeyInfo) => {
     const { algorithm, publicKey: publicKeyAsn1 } = subjectPublicKeyInfo;
@@ -31,22 +32,18 @@ const decomposeRsaSubjectPublicKeyInfo = (subjectPublicKeyInfo) => {
         throw new UnsupportedAlgorithmError(`Unsupported key algorithm OID '${algorithm.id}'`);
     }
 
-    const keyData = decodeAsn1(publicKeyAsn1.data, RsaPublicKey);
+    const { keyData } = decomposeRsaPublicKey(publicKeyAsn1.data);
 
     return {
         keyAlgorithm: {
             id: OIDS[algorithm.id],
         },
-        keyData: {
-            ...keyData,
-            // The publicExponent is small, so just transform it to a number
-            publicExponent: uint8ArrayToInteger(keyData.publicExponent),
-        },
+        keyData,
     };
 };
 
 const composeRsaSubjectPublicKeyInfo = (keyAlgorithm, keyData) => {
-    const rsaPrivateKeyAsn1 = encodeAsn1(keyData, RsaPublicKey);
+    const rsaPublicKeyAsn1 = composeRsaPublicKey(keyAlgorithm, keyData);
 
     return {
         algorithm: {
@@ -55,7 +52,63 @@ const composeRsaSubjectPublicKeyInfo = (keyAlgorithm, keyData) => {
         },
         publicKey: {
             unused: 0,
-            data: rsaPrivateKeyAsn1,
+            data: rsaPublicKeyAsn1,
+        },
+    };
+};
+
+const decomposeEcSubjectPublicKeyInfo = (subjectPublicKeyInfo) => {
+    const { algorithm, publicKey } = subjectPublicKeyInfo;
+
+    const namedCurveOid = decodeAsn1(algorithm.parameters, EcParameters);
+    const namedCurve = OIDS[namedCurveOid];
+
+    const encodedPoint = publicKey.data;
+
+    if (encodedPoint[0] !== 4) {
+        throw new UnsupportedAlgorithmError('Uncompressed key points are not supported');
+    }
+
+    // Get the byte length based on the curve name, by extract the number of bits from it
+    // and converting it to bytes
+    // Note that the number of bits may not be multiples of 8
+    const byteLength = Math.floor((Number(namedCurve.match(/\d+/)[0]) + 7) / 8);
+
+    if (encodedPoint.length !== (byteLength * 2) + 1) {
+        throw new UnsupportedAlgorithmError(`Expecting public key to have length ${(byteLength * 2) - 1}, got ${encodedPoint.length} instead`);
+    }
+
+    return {
+        keyAlgorithm: {
+            id: 'ec-public-key',
+            namedCurve,
+        },
+        keyData: {
+            x: encodedPoint.slice(1, byteLength + 1),
+            y: encodedPoint.slice(byteLength + 1),
+        },
+    };
+};
+
+const composeEcSubjectPublicKeyInfo = (keyAlgorithm, keyData) => {
+    const namedCurveOid = FLIPPED_OIDS[keyAlgorithm.namedCurve];
+
+    if (!namedCurveOid) {
+        throw new UnsupportedAlgorithmError(`Unsupported named curve '${keyAlgorithm.namedCurve}'`);
+    }
+
+    return {
+        algorithm: {
+            id: FLIPPED_OIDS[keyAlgorithm.id],
+            parameters: encodeAsn1(namedCurveOid, EcParameters),
+        },
+        publicKey: {
+            unused: 0,
+            data: new Uint8Array([
+                4,
+                ...keyData.x,
+                ...keyData.y,
+            ]),
         },
     };
 };
@@ -88,6 +141,7 @@ export const decomposeSubjectPublicKeyInfo = (subjectPublicKeyInfo) => {
 
     switch (keyType) {
     case 'rsa': return decomposeRsaSubjectPublicKeyInfo(subjectPublicKeyInfo);
+    case 'ec': return decomposeEcSubjectPublicKeyInfo(subjectPublicKeyInfo);
     case 'ed25519': return decomposeEd25519SubjectPublicKeyInfo(subjectPublicKeyInfo);
     default:
         throw new UnsupportedAlgorithmError(`Unsupported key algorithm OID '${subjectPublicKeyInfo.algorithm.id}'`);
@@ -99,6 +153,7 @@ export const composeSubjectPublicKeyInfo = (keyAlgorithm, keyData) => {
 
     switch (keyType) {
     case 'rsa': return composeRsaSubjectPublicKeyInfo(keyAlgorithm, keyData);
+    case 'ec': return composeEcSubjectPublicKeyInfo(keyAlgorithm, keyData);
     case 'ed25519': return composeEd25519SubjectPublicKeyInfo(keyAlgorithm, keyData);
     default:
         throw new UnsupportedAlgorithmError(`Unsupported key algorithm id '${keyAlgorithm.id}'`);

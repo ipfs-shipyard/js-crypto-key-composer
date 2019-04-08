@@ -1,4 +1,4 @@
-const KEY_TYPES = {
+export const KEY_TYPES = {
     // RSA key types
     'rsa-encryption': 'rsa',
     'md2-with-rsa-encryption': 'rsa',
@@ -14,12 +14,16 @@ const KEY_TYPES = {
     'rsaes-oaep': 'rsa',
     'rsassa-pss': 'rsa',
 
+    // EC key types
+    'ec-public-key': 'ec',
+    'ec-dh': 'ec',
+    'ec-mqv': 'ec',
+
     // ED25519 key types
     ed25519: 'ed25519',
 };
 
 export const KEY_ALIASES = {
     rsa: { id: 'rsa-encryption' },
+    ec: { id: 'ec-public-key' },
 };
-
-export default KEY_TYPES;

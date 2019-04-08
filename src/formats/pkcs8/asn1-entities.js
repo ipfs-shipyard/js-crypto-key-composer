@@ -1,82 +1,68 @@
-/* eslint-disable babel/no-invalid-this, newline-per-chained-call */
+/* eslint-disable newline-per-chained-call */
 import { Buffer } from 'buffer';
-import asn1 from '@lordvlad/asn1.js';
+import { define, objidValues } from '../../util/asn1';
 import { FLIPPED_OIDS } from '../../util/oids';
 
-// Ensure that all asn1 objid are returned as strings separated with '.'
-// See https://github.com/indutny/asn1.js/blob/b99ce086320e0123331e6272f6de75548c6855fa/lib/asn1/decoders/der.js#L198
-// See https://github.com/indutny/asn1.js/blob/b99ce086320e0123331e6272f6de75548c6855fa/lib/asn1/encoders/der.js#L103
-const objIdValues = new Proxy({}, {
-    get: (obj, key) => {
-        if (key === 'hasOwnProperty') {
-            return (key) => key.indexOf('.') > 0;
-        }
-
-        return key.indexOf('.') > 0 ? key : undefined;
-    },
-});
-
-export const AlgorithmIdentifier = asn1.define('AlgorithmIdentifier', function () {
-    this.seq().obj(
-        this.key('id').objid(objIdValues),
-        this.key('parameters').optional().any()
+export const AlgorithmIdentifier = define('AlgorithmIdentifier', (asn1) => {
+    asn1.seq().obj(
+        asn1.key('id').objid(objidValues),
+        asn1.key('parameters').optional().any()
     );
 });
 
 // This is actually a OneAsymmetricKey, defined in https://tools.ietf.org/html/rfc8410
-export const PrivateKeyInfo = asn1.define('PrivateKeyInfo', function () {
-    this.seq().obj(
-        this.key('version').int(),
-        this.key('privateKeyAlgorithm').use(AlgorithmIdentifier),
-        this.key('privateKey').octstr(),
-        this.key('attributes').implicit(0).optional().any(),
-        this.key('publicKey').implicit(1).optional().bitstr()
+export const PrivateKeyInfo = define('PrivateKeyInfo', (asn1) => {
+    asn1.seq().obj(
+        asn1.key('version').int(),
+        asn1.key('privateKeyAlgorithm').use(AlgorithmIdentifier),
+        asn1.key('privateKey').octstr(),
+        asn1.key('attributes').implicit(0).optional().any(),
+        asn1.key('publicKey').implicit(1).optional().bitstr()
     );
 });
 
-export const EncryptedPrivateKeyInfo = asn1.define('EncryptedPrivateKeyInfo', function () {
-    this.seq().obj(
-        this.key('encryptionAlgorithm').use(AlgorithmIdentifier),
-        this.key('encryptedData').octstr(),
+export const EncryptedPrivateKeyInfo = define('EncryptedPrivateKeyInfo', (asn1) => {
+    asn1.seq().obj(
+        asn1.key('encryptionAlgorithm').use(AlgorithmIdentifier),
+        asn1.key('encryptedData').octstr(),
     );
 });
 
-export const Pbes2Algorithms = asn1.define('PBES2Algorithms', function () {
-    this.seq().obj(
-        this.key('keyDerivationFunc').use(AlgorithmIdentifier),
-        this.key('encryptionScheme').use(AlgorithmIdentifier),
+export const Pbes2Algorithms = define('PBES2Algorithms', (asn1) => {
+    asn1.seq().obj(
+        asn1.key('keyDerivationFunc').use(AlgorithmIdentifier),
+        asn1.key('encryptionScheme').use(AlgorithmIdentifier),
     );
 });
 
 export const Pbes2EsParams = {
-    'des-cbc': asn1.define('desCBC', function () { this.octstr(); }),
-    'des-ede3-cbc': asn1.define('des-EDE3-CBC', function () { this.octstr(); }),
-    'aes128-cbc': asn1.define('aes128-CBC', function () { this.octstr(); }),
-    'aes192-cbc': asn1.define('aes192-CBC', function () { this.octstr(); }),
-    'aes256-cbc': asn1.define('aes256-CBC', function () { this.octstr(); }),
+    'des-cbc': define('desCBC', (asn1) => asn1.octstr()),
+    'des-ede3-cbc': define('des-EDE3-CBC', (asn1) => asn1.octstr()),
+    'aes128-cbc': define('aes128-CBC', (asn1) => asn1.octstr()),
+    'aes192-cbc': define('aes192-CBC', (asn1) => asn1.octstr()),
+    'aes256-cbc': define('aes256-CBC', (asn1) => asn1.octstr()),
 };
 
-export const Pbkdf2Params = asn1.define('PBKDF2-params', function () {
-    this.seq().obj(
-        this.key('salt').choice({
-            specified: this.octstr(),
-            otherSource: this.use(AlgorithmIdentifier),
+export const Pbkdf2Params = define('PBKDF2-params', (asn1) => {
+    asn1.seq().obj(
+        asn1.key('salt').choice({
+            specified: asn1.octstr(),
+            otherSource: asn1.use(AlgorithmIdentifier),
         }),
-        this.key('iterationCount').int(),
-        this.key('keyLength').int().optional(),
-        this.key('prf').use(AlgorithmIdentifier).def({
+        asn1.key('iterationCount').int(),
+        asn1.key('keyLength').int().optional(),
+        asn1.key('prf').use(AlgorithmIdentifier).def({
             id: FLIPPED_OIDS['hmac-with-sha1'],
             parameters: Buffer.from([0x05, 0x00]),
         })
     );
 });
 
-export const Rc2CbcParameter = asn1.define('RC2-CBC-Parameter', function () {
-    this.seq().obj(
-        this.key('rc2ParameterVersion').int().optional(),
-        this.key('iv').octstr()
+export const Rc2CbcParameter = define('RC2-CBC-Parameter', (asn1) => {
+    asn1.seq().obj(
+        asn1.key('rc2ParameterVersion').int().optional(),
+        asn1.key('iv').octstr()
     );
 });
 
-export const CurvePrivateKey = asn1.define('CurvePrivateKey', function () { this.octstr(); });
-/* eslint-enable babel/no-invalid-this, newline-per-chained-call */
+export const CurvePrivateKey = define('CurvePrivateKey', (asn1) => asn1.octstr());

@@ -1,1 +1,1 @@
-> A key with an invalid key algorithm OID (manually crafted)
+> A SPKI-DER key with an invalid key algorithm OID (manually crafted)

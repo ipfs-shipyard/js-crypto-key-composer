@@ -48,16 +48,16 @@ ACTUAL KEY BASE64 HERE
 -----END RSA PRIVATE KEY-----
 `
 
-const myDecomposedPrivateKey = decomposePrivateKey(myPrivatePemKey)
+const myPrivateDecomposedKey = decomposePrivateKey(myPrivatePemKey)
 // {
 //     format: 'pkcs1-pem',
 //     keyAlgorithm: {
 //         id: 'rsa-encryption'
 //     },
 //     keyData: {
-//         publicExponent: 65537,
 //         modulus: Uint8Array(...),
-//         prime1: Uint8Array(...),
+//         publicExponent: Uint8Array(...),
+//         privateExponent: Uint8Array(...),
 //         // ...
 //     },
 //     encryptionAlgorithm: null
@@ -66,14 +66,14 @@ const myDecomposedPrivateKey = decomposePrivateKey(myPrivatePemKey)
 
 The `inputKey` may be a TypedArray (including Node's Buffer), a ArrayBuffer or a binary string.
 
-Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `sha512-with-rsa-encryption`, `rsa-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getKeyTypeFromAlgorithm`](#getkeytypefromalgorithmkeyalgorithm) to properly get the key type.
+> ⚠️ Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `sha512-with-rsa-encryption`, `rsa-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getKeyTypeFromAlgorithm`](#getkeytypefromalgorithmkeyalgorithm) to properly get the key type.
 </details>
 
 **Available options**:
 
 | name | type | default | description |
 | ---- | ---- | ------- | ----------- |
-| format | string/Array | *all formats* | Limit the parsing to one or more formats |
+| format | string/Array | `['raw-pem', 'pkcs8-pem']` | Limit the parsing to one or more [`formats`](#formats) |
 | password | string | | The password to use to decrypt the key |
 
 Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong.
@@ -92,9 +92,9 @@ const myPrivatePemKey = composePrivateKey({
         id: 'rsa-encryption',
     },
     keyData: {
-        publicExponent: 65537,
         modulus: Uint8Array(...),
-        prime1: Uint8Array(...),
+        publicExponent: Uint8Array(...),
+        privateExponent: Uint8Array(...),
         // ...
     }
 });
@@ -123,15 +123,15 @@ ACTUAL KEY BASE64 HERE
 -----END PUBLIC KEY-----
 `
 
-const myPublicDecomposedKey = decomposePublicKey(myPublicPemKey)
+const myDecomposedPublicKey = decomposePublicKey(myPublicPemKey)
 // {
 //     format: 'pkcs1-pem',
 //     keyAlgorithm: {
 //         id: 'rsa-encryption'
 //     },
 //     keyData: {
-//        publicExponent: 65537,
-//        modulus: Uint8Array(...)
+//        modulus: Uint8Array(...),
+//        publicExponent: Uint8Array(...)
 //     },
 //     encryptionAlgorithm: null
 // }
@@ -139,14 +139,14 @@ const myPublicDecomposedKey = decomposePublicKey(myPublicPemKey)
 
 The `inputKey` may be a TypedArray (including Node's Buffer), a ArrayBuffer or a binary string.
 
-Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `rsaes-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getKeyTypeFromAlgorithm`](#get-key-type-from-algorithm) to properly get the key type.
+> ⚠️ Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `rsaes-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getKeyTypeFromAlgorithm`](#get-key-type-from-algorithm) to properly get the key type.
 </details>
 
 Available options:
 
 | name | type | default | description |
 | ---- | ---- | ------- | ----------- |
-| format | string/Array | *all formats* | Limit the parsing to one or more formats |
+| format | string/Array | `['raw-pem', 'spki-pem']` | Limit the parsing to one or more formats |
 
 Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong.
 When the `inputKey` is not encoded in any of the valid formats, a `AggregatedInvalidInputKeyError` is thrown, containing a `errors` property with the errors indexed by format. If a single `options.format` was specified, a `InvalidInputKeyError` is thrown instead.
@@ -156,16 +156,16 @@ When the `inputKey` is not encoded in any of the valid formats, a `AggregatedInv
 Composes a public key from its parts: [`format`](#formats), [`keyAlgorithm`](#key-algorithms) and [`keyData`](#key-data). This function is the inverse of `decomposePublicKey`.
 
 ```js
-import { composePrivateKey } from 'crypto-key-composer';
+import { composePublicKey } from 'crypto-key-composer';
 
-const myPublicPemKey = composePrivateKey({
+const myPublicPemKey = composePublicKey({
     format: 'pkcs1-pem',
     keyAlgorithm: {
         id: 'rsa-encryption',
     },
     keyData: {
-        publicExponent: 65537,
-        modulus: Uint8Array(...)
+        modulus: Uint8Array(...),
+        publicExponent: Uint8Array(...)
     }
 });
 ```
@@ -192,34 +192,70 @@ getKeyTypeFromAlgorithm('ed25519')  // ed25519
 
 Below you will find the list of supported formats for private and public keys.
 
-<details><summary><strong>pcks1-der (private)</strong></summary>
+<details><summary><strong>raw-der (public & private)</strong></summary>
 
-The `pkcs1-der` is the DER encoded ASN1 format defined in [RFC 8017](https://tools.ietf.org/html/rfc8017).
+The `raw-der` is the DER encoded ASN1 format defined in [RFC 8017](https://tools.ietf.org/html/rfc8017) for RSA keys and in [RFC5915](https://tools.ietf.org/html/rfc5915) for EC keys.
 
-This format is only capable of storing unencrypted RSA keys. It's recommended to use the newer PKCS8 whenever possible because it's able to store a variety of key types other than RSA.
-
-Supported key algorithms:
+Supported public key algorithms:
 - Just the standard `rsa-encryption` RSA algorithm (or the `rsa` alias)
 
+Supported private key algorithms:
+- Just the standard `rsa-encryption` RSA algorithm (or the `rsa` alias)
+- Just the standard `ec-public-key` EC algorithm (or the `ec` alias)
+
 Supported encryption algorithms: *none*
+
+> ⚠️ It's recommended to use the newer PKCS8 format whenever possible because it's able to store more types of keys and support encryption.
 </details>
 
-<details><summary><strong>pcks1-pem (private)</strong></summary>
+<details><summary><strong>raw-pem (public & private)</strong></summary>
 
-The `pkcs1-pem` is the PEM encoded version of `pkcs1-der` and is defined in [RFC 1421](https://tools.ietf.org/html/rfc1421).
+The `raw-pem` is the PEM encoded version of `raw-der` and is defined in [RFC 1421](https://tools.ietf.org/html/rfc1421).
 
-Supported key algorithms: *same as `pkcs1-der`*
+Supported public key algorithms:
+- Just the standard `rsa-encryption` RSA algorithm (or the `rsa` alias)
+
+Supported private key algorithms: *same as `pkcs1-der`*
+- Just the standard `rsa-encryption` RSA algorithm (or the `rsa` alias)
+- Just the standard `ec-public-key` RSA algorithm (or the `ec` alias)
 
 Supported encryption algorithms:
 - keyDerivationFunc: `openssl-derive-bytes` (default)
 - encryptionScheme: `aes256-cbc` (default), `aes192-cbc`, `aes128-cbc`, `des-ede3-cbc`, `des-cbc`, `rc2-cbc`
+
+> ⚠️ It's recommended to use the newer PKCS8 format whenever possible because it's able to store more types of keys and support stronger encryption algorithms.
+</details>
+
+<details><summary><strong>pcks1-der (private)</strong></summary>
+
+The `pkcs1-der` is the DER encoded ASN1 format defined in [RFC 8017](https://tools.ietf.org/html/rfc8017). It's a subset of the `raw-der` format, supporting only RSA keys.
+
+Supported private key algorithms:
+- Just the standard `rsa-encryption` RSA algorithm (or the `rsa` alias)
+
+Supported encryption algorithms: *none*
+
+> ⚠️ It's recommended to use the newer PKCS8 format whenever possible because it's able to store more types of keys and support encryption.
+</details>
+
+<details><summary><strong>pcks1-pem (private)</strong></summary>
+
+The `pkcs1-pem` is the PEM encoded version of `pkcs1-der` and is defined in [RFC 1421](https://tools.ietf.org/html/rfc1421). It's a subset of the `raw-pem` format, supporting only RSA keys.
+
+Supported private key algorithms: *same as `pkcs1-der`*
+
+Supported encryption algorithms:
+- keyDerivationFunc: `openssl-derive-bytes` (default)
+- encryptionScheme: `aes256-cbc` (default), `aes192-cbc`, `aes128-cbc`, `des-ede3-cbc`, `des-cbc`, `rc2-cbc`
+
+> ⚠️ It's recommended to use the newer PKCS8 format whenever possible because it's able to store more types of keys and support stronger encryption algorithms.
 </details>
 
 <details><summary><strong>pcks8-der (private)</strong></summary>
 
 The `pkcs1-der` is the DER encoded ASN1 format defined in [RFC 5208](https://tools.ietf.org/html/rfc5208) and [RFC 5985](https://tools.ietf.org/html/rfc5958).
 
-Supported key algorithms:
+Supported private key algorithms:
 - RSA keys
 - ED25519 keys
 
@@ -232,7 +268,7 @@ Supported encryption algorithms ([PKCS#5](https://tools.ietf.org/html/rfc8018)):
 
 The `pkcs8-pem` is the PEM encoded version of `pkcs8-der` and is defined in [RFC 1421](https://tools.ietf.org/html/rfc1421).
 
-Supported key algorithms: *same as `pkcs8-der`*
+Supported private key algorithms: *same as `pkcs8-der`*
 
 Supported encryption algorithms: *same as `pkcs8-der`*
 </details>
@@ -241,8 +277,9 @@ Supported encryption algorithms: *same as `pkcs8-der`*
 
 The `spki-der` is a format to represent various types of public keys and is defined in [RFC 5280](https://tools.ietf.org/html/rfc5280#page-25).
 
-Supported key algorithms:
+Supported private key algorithms:
 - RSA keys
+- EC keys
 - ED25519 keys
 
 Supported encryption algorithms: *does not apply*
@@ -293,9 +330,65 @@ Because they have no parameters, the example above may also be expressed like so
     keyAlgorithm: 'rsa-encryption'
 }
 ```
+Worth noting that may use the `rsa` alias in the key algorithm id, which maps to `rsa-encryption`. At the moment, `rsaes-oaep` and `rsassa-pss` are not yet supported, see ([issue #4](https://github.com/ipfs-shipyard/js-crypto-key-composer/issues/4)).
+</details>
 
-Also, you may use the `rsa` alias that maps to `rsa-encryption`. At the moment, `rsaes-oaep` and `rsassa-pss` are not yet supported, see ([issue #4](https://github.com/ipfs-shipyard/js-crypto-key-composer/issues/4)).
+<details><summary><strong>EC keys</strong></summary>
 
+The following EC (elliptic curve) algorithms are supported:
+
+- `ec-public-key`
+- `ec-dh`
+- `ec-mqv`
+
+Only named curves may be used. The following curves are supported:
+
+-  `sect163k1`
+-  `sect163r1`
+-  `sect239k1`
+-  `sect113r1`
+-  `sect113r2`
+-  `secp112r1`
+-  `secp112r2`
+-  `secp160r1`
+-  `secp160k1`
+-  `secp256k1`
+-  `sect163r2`
+-  `sect283k1`
+-  `sect283r1`
+-  `sect131r1`
+-  `sect131r2`
+-  `sect193r1`
+-  `sect193r2`
+-  `sect233k1`
+-  `sect233r1`
+-  `secp128r1`
+-  `secp128r2`
+-  `secp160r2`
+-  `secp192k1`
+-  `secp224k1`
+-  `secp224r1`
+-  `secp384r1`
+-  `secp521r1`
+-  `sect409k1`
+-  `sect409r1`
+-  `sect571k1`
+-  `sect571r1`
+-  `secp192r1`
+-  `secp256r1`
+
+The combination of the key algorithm and the named curve are expressed like so:
+
+```js
+{
+    keyAlgorithm: {
+        id: 'ec-public-key',
+        namedCurve: 'secp256k1',
+    }
+}
+```
+
+Worth noting that may use the `ec` alias in the key algorithm id, which maps to `ec-public-key`.
 </details>
 
 <details><summary><strong>ED25519 keys</strong></summary>
@@ -329,7 +422,7 @@ The key data is the interpreted key contents. Below, you will find the key data 
 {
     keyData: {
         modulus: Uint8Array(/* ... */),
-        publicExponent: 65537,
+        publicExponent: Uint8Array(/* ... */),
         privateExponent: Uint8Array(/* ... */),
         prime1: Uint8Array(/* ... */),
         prime2: Uint8Array(/* ... */),
@@ -355,7 +448,32 @@ The key data is the interpreted key contents. Below, you will find the key data 
 {
     keyData: {
         modulus: Uint8Array(/* ... */),
-        publicExponent: 65537,
+        publicExponent: Uint8Array(/* ... */)
+    }
+}
+```
+</details>
+
+<details><summary><strong>EC private keys</strong></summary>
+   
+```js
+{
+    keyData: {
+        d: Uint8Array(/* ... */),
+        x: Uint8Array(/* ... */),
+        y: Uint8Array(/* ... */),
+    }
+}
+```
+</details>
+
+<details><summary><strong>EC public keys</strong></summary>
+   
+```js
+{
+    keyData: {
+        x: Uint8Array(/* ... */),
+        y: Uint8Array(/* ... */),
     }
 }
 ```

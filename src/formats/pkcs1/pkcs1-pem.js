@@ -1,10 +1,10 @@
 import { encode as encodePem, decode as decodePem } from 'node-forge/lib/pem';
-import { maybeDecryptPemBody, maybeEncryptPemBody } from './encryption';
-import { decomposeKey as decomposePkc1DerKey, composeKey as composePkcs1DerKey } from './pkcs1-der';
+import { maybeDecryptPemBody, maybeEncryptPemBody } from '../raw/encryption';
+import { decomposePrivateKey as decomposeDerPrivateKey, composePrivateKey as composeDerPrivateKey } from './pkcs1-der';
 import { uint8ArrayToBinaryString } from '../../util/binary';
 import { InvalidInputKeyError } from '../../util/errors';
 
-export const decomposeKey = (pem, options) => {
+export const decomposePrivateKey = (pem, options) => {
     const pemStr = uint8ArrayToBinaryString(pem);
 
     let decodedPem;
@@ -17,7 +17,7 @@ export const decomposeKey = (pem, options) => {
 
     const { pemBody: pkcs1Key, encryptionAlgorithm } = maybeDecryptPemBody(decodedPem, options.password);
 
-    const decomposedKey = decomposePkc1DerKey(pkcs1Key, options);
+    const decomposedKey = decomposeDerPrivateKey(pkcs1Key, options);
 
     decomposedKey.encryptionAlgorithm = encryptionAlgorithm;
     decomposedKey.format = 'pkcs1-pem';
@@ -25,8 +25,8 @@ export const decomposeKey = (pem, options) => {
     return decomposedKey;
 };
 
-export const composeKey = ({ encryptionAlgorithm, ...decomposedKey }, options) => {
-    const pkcs1Key = composePkcs1DerKey(decomposedKey, options);
+export const composePrivateKey = ({ encryptionAlgorithm, ...decomposedKey }, options) => {
+    const pkcs1Key = composeDerPrivateKey(decomposedKey, options);
 
     const { pemBody, pemHeaders } = maybeEncryptPemBody(pkcs1Key, encryptionAlgorithm, options.password);
 

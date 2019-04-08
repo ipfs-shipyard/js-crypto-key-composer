@@ -3,22 +3,27 @@ import { decomposePublicKey, composePublicKey } from '../src';
 import { typedArrayToUint8Array } from '../src/util/binary';
 
 const KEYS = {
-    'rsa-1': fs.readFileSync('test/fixtures/spki-der/rsa-1'),
-    'ed25519-1': fs.readFileSync('test/fixtures/spki-der/ed25519-1'),
-    'invalid-1': fs.readFileSync('test/fixtures/spki-der/invalid-1'),
+    'rsa-1': fs.readFileSync('test/fixtures/spki-der/rsa-1.pub'),
+    'ed25519-1': fs.readFileSync('test/fixtures/spki-der/ed25519-1.pub'),
+    'ec-1': fs.readFileSync('test/fixtures/spki-der/ec-1.pub'),
+    'invalid-1': fs.readFileSync('test/fixtures/spki-der/invalid-1.pub'),
 };
 
 describe('decomposePublicKey', () => {
-    it('should decompose a standard RSA key', () => {
+    it('should decompose a RSA key', () => {
         expect(decomposePublicKey(KEYS['rsa-1'], { format: 'spki-der' })).toMatchSnapshot();
     });
 
-    it('should decompose a ed25519 key', () => {
+    it('should decompose a EC key, secp256k1', () => {
+        expect(decomposePublicKey(KEYS['ec-1'], { format: 'spki-der' })).toMatchSnapshot();
+    });
+
+    it('should decompose a ED25519 key', () => {
         expect(decomposePublicKey(KEYS['ed25519-1'], { format: 'spki-der' })).toMatchSnapshot();
     });
 
     it('should also support Uint8Array, ArrayBuffer and string besides Node\'s Buffer', () => {
-        const nodeBuffer = fs.readFileSync('test/fixtures/spki-der/rsa-1');
+        const nodeBuffer = fs.readFileSync('test/fixtures/spki-der/rsa-1.pub');
 
         expect(decomposePublicKey(typedArrayToUint8Array(nodeBuffer), { format: 'spki-der' })).toMatchSnapshot();
         expect(decomposePublicKey(typedArrayToUint8Array(nodeBuffer).buffer, { format: 'spki-der' })).toMatchSnapshot();
@@ -49,14 +54,21 @@ describe('decomposePublicKey', () => {
 });
 
 describe('composePublicKey', () => {
-    it('should compose a standard RSA key (mirroring)', () => {
+    it('should compose a RSA key (mirroring)', () => {
         const decomposedKey = decomposePublicKey(KEYS['rsa-1'], { format: 'spki-der' });
         const composedKey = composePublicKey(decomposedKey);
 
         expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['rsa-1']));
     });
 
-    it('should compose a ed25519 key (mirroring)', () => {
+    it('should compose a EC key (mirroring)', () => {
+        const decomposedKey = decomposePublicKey(KEYS['ec-1'], { format: 'spki-der' });
+        const composedKey = composePublicKey(decomposedKey);
+
+        expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['ec-1']));
+    });
+
+    it('should compose a ED25519 key (mirroring)', () => {
         const decomposedKey = decomposePublicKey(KEYS['ed25519-1'], { format: 'spki-der' });
         const composedKey = composePublicKey(decomposedKey);
 

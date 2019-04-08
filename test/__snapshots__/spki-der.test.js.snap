@@ -266,7 +266,11 @@ Object {
       190,
       213,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;
@@ -537,7 +541,11 @@ Object {
       190,
       213,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;
@@ -808,12 +816,96 @@ Object {
       190,
       213,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;
 
-exports[`decomposePublicKey should decompose a ed25519 key 1`] = `
+exports[`decomposePublicKey should decompose a EC key, secp256k1 1`] = `
+Object {
+  "format": "spki-der",
+  "keyAlgorithm": Object {
+    "id": "ec-public-key",
+    "namedCurve": "secp256k1",
+  },
+  "keyData": Object {
+    "x": Uint8Array [
+      154,
+      104,
+      77,
+      164,
+      157,
+      50,
+      223,
+      86,
+      49,
+      217,
+      119,
+      86,
+      36,
+      222,
+      162,
+      156,
+      193,
+      94,
+      254,
+      227,
+      169,
+      75,
+      127,
+      188,
+      165,
+      249,
+      239,
+      233,
+      229,
+      26,
+      22,
+      195,
+    ],
+    "y": Uint8Array [
+      196,
+      64,
+      136,
+      81,
+      73,
+      221,
+      9,
+      200,
+      79,
+      92,
+      83,
+      155,
+      143,
+      64,
+      135,
+      55,
+      102,
+      224,
+      31,
+      103,
+      252,
+      207,
+      202,
+      40,
+      108,
+      26,
+      244,
+      101,
+      172,
+      36,
+      225,
+      137,
+    ],
+  },
+}
+`;
+
+exports[`decomposePublicKey should decompose a ED25519 key 1`] = `
 Object {
   "format": "spki-der",
   "keyAlgorithm": Object {
@@ -858,7 +950,7 @@ Object {
 }
 `;
 
-exports[`decomposePublicKey should decompose a standard RSA key 1`] = `
+exports[`decomposePublicKey should decompose a RSA key 1`] = `
 Object {
   "format": "spki-der",
   "keyAlgorithm": Object {
@@ -1124,7 +1216,11 @@ Object {
       190,
       213,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;

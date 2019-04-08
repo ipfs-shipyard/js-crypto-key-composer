@@ -1177,7 +1177,11 @@ Object {
       184,
       13,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;
@@ -2359,7 +2363,11 @@ Object {
       184,
       13,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;
@@ -3541,12 +3549,16 @@ Object {
       184,
       13,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;
 
-exports[`decomposePrivateKey should decompose a standard RSA key 1`] = `
+exports[`decomposePrivateKey should decompose a RSA key 1`] = `
 Object {
   "encryptionAlgorithm": null,
   "format": "pkcs8-pem",
@@ -4723,7 +4735,11 @@ Object {
       184,
       13,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;
@@ -5943,7 +5959,11 @@ Object {
       74,
       33,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;

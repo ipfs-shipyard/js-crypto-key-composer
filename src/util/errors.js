@@ -67,6 +67,6 @@ export class DecodeAsn1FailedError extends BaseError {
 
 export class EncodeAsn1FailedError extends BaseError {
     constructor(modelName, props) {
-        super(`Failed to encode ${modelName}`, 'EncodeAsn1FailedError', 'ENCODE_ASN1_FAILED', props);
+        super(`Failed to encode ${modelName}`, 'EncodeAsn1FailedError', 'ENCODE_ASN1_FAILED', { ...props, modelName });
     }
 }

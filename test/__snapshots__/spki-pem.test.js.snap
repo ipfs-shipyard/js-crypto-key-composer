@@ -266,7 +266,11 @@ Object {
       190,
       213,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;
@@ -537,7 +541,11 @@ Object {
       190,
       213,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;
@@ -808,12 +816,16 @@ Object {
       190,
       213,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;
 
-exports[`decomposePublicKey should decompose a ed25519 key 1`] = `
+exports[`decomposePublicKey should decompose a ED25519 key 1`] = `
 Object {
   "format": "spki-pem",
   "keyAlgorithm": Object {
@@ -858,7 +870,7 @@ Object {
 }
 `;
 
-exports[`decomposePublicKey should decompose a standard RSA key 1`] = `
+exports[`decomposePublicKey should decompose a RSA key 1`] = `
 Object {
   "format": "spki-pem",
   "keyAlgorithm": Object {
@@ -1124,7 +1136,11 @@ Object {
       190,
       213,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;

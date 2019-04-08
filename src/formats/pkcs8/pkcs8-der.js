@@ -4,7 +4,7 @@ import { PrivateKeyInfo } from './asn1-entities';
 import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
 import { InvalidInputKeyError, DecodeAsn1FailedError } from '../../util/errors';
 
-export const decomposeKey = (encryptedPrivateKeyInfoAsn1, options) => {
+export const decomposePrivateKey = (encryptedPrivateKeyInfoAsn1, options) => {
     // Attempt to decrypt privateKeyInfoAsn1 as it might actually be a EncryptedPrivateKeyInfo
     const { privateKeyInfoAsn1, encryptionAlgorithm } = maybeDecryptPrivateKeyInfo(encryptedPrivateKeyInfoAsn1, options.password);
 
@@ -14,7 +14,7 @@ export const decomposeKey = (encryptedPrivateKeyInfoAsn1, options) => {
     try {
         privateKeyInfo = decodeAsn1(privateKeyInfoAsn1, PrivateKeyInfo);
     } catch (err) {
-        if (!encryptionAlgorithm && err instanceof DecodeAsn1FailedError) {
+        if (err instanceof DecodeAsn1FailedError) {
             throw new InvalidInputKeyError(err.message, { originalError: err });
         }
 
@@ -32,7 +32,7 @@ export const decomposeKey = (encryptedPrivateKeyInfoAsn1, options) => {
     };
 };
 
-export const composeKey = ({ keyAlgorithm, keyData, encryptionAlgorithm }, options) => {
+export const composePrivateKey = ({ keyAlgorithm, keyData, encryptionAlgorithm }, options) => {
     // Generate the PrivateKeyInfo based on the key algorithm & key data
     const privateKeyInfo = composePrivateKeyInfo(keyAlgorithm, keyData);
 

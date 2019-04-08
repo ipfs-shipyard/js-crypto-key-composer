@@ -1181,7 +1181,11 @@ Object {
       148,
       205,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;
@@ -2367,7 +2371,11 @@ Object {
       148,
       205,
     ],
-    "publicExponent": 65537,
+    "publicExponent": Uint8Array [
+      1,
+      0,
+      1,
+    ],
   },
 }
 `;

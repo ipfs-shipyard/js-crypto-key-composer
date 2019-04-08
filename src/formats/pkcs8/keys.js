@@ -1,10 +1,10 @@
 import { CurvePrivateKey } from './asn1-entities';
-import { decomposeRsaPrivateKey, composeRsaPrivateKey } from '../pkcs1/keys';
+import { decomposeRsaPrivateKey, composeRsaPrivateKey } from '../raw/keys';
 import { OIDS, FLIPPED_OIDS } from '../../util/oids';
 import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
 import { hexStringToUint8Array } from '../../util/binary';
 import { UnsupportedAlgorithmError } from '../../util/errors';
-import KEY_TYPES from '../../util/key-types';
+import { KEY_TYPES } from '../../util/key-types';
 
 const decomposeRsaPrivateKeyInfo = (privateKeyInfo) => {
     const { privateKeyAlgorithm, privateKey: privateKeyAsn1 } = privateKeyInfo;
@@ -43,7 +43,7 @@ const decomposeRsaPrivateKeyInfo = (privateKeyInfo) => {
 };
 
 const composeRsaPrivateKeyInfo = (keyAlgorithm, keyData) => {
-    const rsaPrivateKeyAsn1 = composeRsaPrivateKey(keyData);
+    const rsaPrivateKeyAsn1 = composeRsaPrivateKey(keyAlgorithm, keyData);
 
     return {
         version: 0,

@@ -1,8 +1,8 @@
-import { decomposeRsaPrivateKey, composeRsaPrivateKey } from './keys';
-import KEY_TYPES from '../../util/key-types';
+import { decomposeRsaPrivateKey, composeRsaPrivateKey } from '../raw/keys';
 import { UnsupportedAlgorithmError, DecodeAsn1FailedError, InvalidInputKeyError } from '../../util/errors';
+import { KEY_TYPES } from '../../util/key-types';
 
-export const decomposeKey = (rsaPrivateKeyAsn1) => {
+export const decomposePrivateKey = (rsaPrivateKeyAsn1) => {
     let decomposedRsaKey;
 
     try {
@@ -25,7 +25,7 @@ export const decomposeKey = (rsaPrivateKeyAsn1) => {
     };
 };
 
-export const composeKey = ({ keyAlgorithm, keyData, encryptionAlgorithm }) => {
+export const composePrivateKey = ({ keyAlgorithm, keyData, encryptionAlgorithm }) => {
     const keyType = KEY_TYPES[keyAlgorithm.id];
 
     if (keyType !== 'rsa') {
@@ -33,8 +33,8 @@ export const composeKey = ({ keyAlgorithm, keyData, encryptionAlgorithm }) => {
     }
 
     if (encryptionAlgorithm) {
-        throw new UnsupportedAlgorithmError('PKCS1 keys do not support any kind of encryption');
+        throw new UnsupportedAlgorithmError('The PKCS1 DER format does not support encryption');
     }
 
-    return composeRsaPrivateKey(keyData);
+    return composeRsaPrivateKey(keyAlgorithm, keyData);
 };

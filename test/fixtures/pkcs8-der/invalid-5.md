@@ -1,1 +1,0 @@
-> A key with an invalid RC2 version (manually crafted)
