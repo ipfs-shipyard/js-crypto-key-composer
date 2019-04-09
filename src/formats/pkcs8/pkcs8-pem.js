@@ -1,18 +1,17 @@
-import { encode as encodePem, decode as decodePem } from 'node-forge/lib/pem';
 import { decomposePrivateKey as decomposeDerPrivateKey, composePrivateKey as composeDerPrivateKey } from './pkcs8-der';
 import { binaryStringToUint8Array, uint8ArrayToBinaryString } from '../../util/binary';
-import { InvalidInputKeyError } from '../../util/errors';
+import { decodePem, encodePem } from '../../util/pem';
+import { DecodePemFailedError } from '../../util/errors';
 
 export const decomposePrivateKey = (pem, options) => {
     // Decode pem
-    const pemStr = uint8ArrayToBinaryString(pem);
-
     let decodedPem;
 
     try {
-        decodedPem = decodePem(pemStr)[0];
+        decodedPem = decodePem(pem, ['PRIVATE KEY', 'ENCRYPTED PRIVATE KEY']);
     } catch (err) {
-        throw new InvalidInputKeyError('Failed to decode PKCS8 as PEM', { originalErr: err });
+        err.invalidInputKey = err instanceof DecodePemFailedError;
+        throw err;
     }
 
     // Decompose key using `pkcs8-der`
@@ -29,10 +28,8 @@ export const composePrivateKey = (decomposedKey, options) => {
     const pkcs8Key = composeDerPrivateKey(decomposedKey, options);
 
     // Encode pem
-    const pem = {
+    return encodePem({
         type: options.password ? 'ENCRYPTED PRIVATE KEY' : 'PRIVATE KEY',
         body: uint8ArrayToBinaryString(pkcs8Key),
-    };
-
-    return encodePem(pem).replace(/\r/g, '');
+    });
 };

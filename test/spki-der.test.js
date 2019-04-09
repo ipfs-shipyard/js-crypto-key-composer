@@ -48,7 +48,7 @@ describe('decomposePublicKey', () => {
             decomposePublicKey('', { format: 'spki-der' });
         } catch (err) {
             expect(err.message).toBe('Failed to decode SubjectPublicKeyInfo');
-            expect(err.code).toBe('INVALID_INPUT_KEY');
+            expect(err.code).toBe('DECODE_ASN1_FAILED');
         }
     });
 });

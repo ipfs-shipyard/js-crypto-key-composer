@@ -1,10 +1,10 @@
-import { EncryptedPrivateKeyInfo, Pbes2Algorithms, Pbkdf2Params, Pbes2EsParams, Rc2CbcParameter } from './asn1-entities';
-import { OIDS, FLIPPED_OIDS } from '../../util/oids';
-import { encryptWithPassword, decryptWithPassword } from '../../util/pbe';
 import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
+import { EncryptedPrivateKeyInfo, Pbes2Algorithms, Pbkdf2Params, Pbes2EsParams, Rc2CbcParameter } from '../../util/asn1-entities';
+import { encryptWithPassword, decryptWithPassword } from '../../util/pbe';
 import { uint8ArrayToInteger, hexStringToUint8Array } from '../../util/binary';
 import { UnsupportedAlgorithmError, DecodeAsn1FailedError, MissingPasswordError } from '../../util/errors';
 import { validateEncryptionAlgorithm } from '../../util/validator';
+import { OIDS, FLIPPED_OIDS } from '../../util/oids';
 
 export const decryptWithPBES2 = (encryptedData, encryptionAlgorithmParamsAsn1, password) => {
     const { keyDerivationFunc, encryptionScheme } = decodeAsn1(encryptionAlgorithmParamsAsn1, Pbes2Algorithms);
@@ -183,6 +183,8 @@ export const maybeDecryptPrivateKeyInfo = (encryptedPrivateKeyInfoAsn1, password
                 privateKeyInfoAsn1: encryptedPrivateKeyInfoAsn1,
             };
         }
+
+        throw err;
     }
 
     if (!password) {

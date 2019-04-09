@@ -1,18 +1,17 @@
-import { encode as encodePem, decode as decodePem } from 'node-forge/lib/pem';
 import { maybeDecryptPemBody, maybeEncryptPemBody } from '../raw/encryption';
 import { decomposePrivateKey as decomposeDerPrivateKey, composePrivateKey as composeDerPrivateKey } from './pkcs1-der';
+import { decodePem, encodePem } from '../../util/pem';
 import { uint8ArrayToBinaryString } from '../../util/binary';
-import { InvalidInputKeyError } from '../../util/errors';
+import { DecodePemFailedError } from '../../util/errors';
 
 export const decomposePrivateKey = (pem, options) => {
-    const pemStr = uint8ArrayToBinaryString(pem);
-
     let decodedPem;
 
     try {
-        decodedPem = decodePem(pemStr)[0];
+        decodedPem = decodePem(pem, 'RSA PRIVATE KEY');
     } catch (err) {
-        throw new InvalidInputKeyError('Failed to decode PKCS1 as PEM', { originalError: err });
+        err.invalidInputKey = err instanceof DecodePemFailedError;
+        throw err;
     }
 
     const { pemBody: pkcs1Key, encryptionAlgorithm } = maybeDecryptPemBody(decodedPem, options.password);
@@ -30,11 +29,9 @@ export const composePrivateKey = ({ encryptionAlgorithm, ...decomposedKey }, opt
 
     const { pemBody, pemHeaders } = maybeEncryptPemBody(pkcs1Key, encryptionAlgorithm, options.password);
 
-    const pem = {
+    return encodePem({
         type: 'RSA PRIVATE KEY',
         body: uint8ArrayToBinaryString(pemBody),
         ...pemHeaders,
-    };
-
-    return encodePem(pem).replace(/\r/g, '');
+    });
 };

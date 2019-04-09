@@ -1,6 +1,6 @@
 import { PRIVATE_FORMATS, PUBLIC_FORMATS, DEFAULT_PRIVATE_FORMATS, DEFAULT_PUBLIC_FORMATS } from './formats';
 import { validateInputKey, validateFormat, validateDecomposedKey } from './util/validator';
-import { AggregatedInvalidInputKeyError, InvalidInputKeyError } from './util/errors';
+import { AggregatedError } from './util/errors';
 import { KEY_TYPES } from './util/key-types';
 
 const decomposeKey = (supportedFormats, inputKey, options) => {
@@ -24,8 +24,8 @@ const decomposeKey = (supportedFormats, inputKey, options) => {
             decomposeKey = supportedFormats[format].decomposeKey(inputKey, options);
             break;
         } catch (err) {
-            // Skip if the error is a InvalidInputKeyError
-            if (err instanceof InvalidInputKeyError) {
+            // Skip if the error is marked as `invalidInputKey`
+            if (err.invalidInputKey) {
                 errors[format] = err;
                 continue;
             }
@@ -36,7 +36,7 @@ const decomposeKey = (supportedFormats, inputKey, options) => {
     }
 
     if (!decomposeKey) {
-        throw new AggregatedInvalidInputKeyError(errors);
+        throw new AggregatedError('No format was able to recognize the input key', errors);
     }
 
     return decomposeKey;

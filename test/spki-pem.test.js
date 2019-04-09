@@ -30,8 +30,8 @@ describe('decomposePublicKey', () => {
         try {
             decomposePublicKey('', { format: 'spki-pem' });
         } catch (err) {
-            expect(err.message).toBe('Failed to decode SPKI as PEM');
-            expect(err.code).toBe('INVALID_INPUT_KEY');
+            expect(err.message).toBe('Failed to decode PEM');
+            expect(err.code).toBe('DECODE_PEM_FAILED');
         }
     });
 });

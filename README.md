@@ -77,7 +77,7 @@ The `inputKey` may be a TypedArray (including Node's Buffer), a ArrayBuffer or a
 | password | string | | The password to use to decrypt the key |
 
 Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong.
-When the `inputKey` is not encoded in any of the valid formats, a `AggregatedInvalidInputKeyError` is thrown, containing a `errors` property with the errors indexed by format. If a single `options.format` was specified, a `InvalidInputKeyError` is thrown instead.
+When `options.format` is an array and `inputKey` is not encoded in any of the valid formats, a `AggregatedError` is thrown, containing a `errors` property with the errors indexed by format.
 
 ### composePrivateKey(decomposedKey, [options])
 
@@ -149,7 +149,8 @@ Available options:
 | format | string/Array | `['raw-pem', 'spki-pem']` | Limit the parsing to one or more formats |
 
 Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong.
-When the `inputKey` is not encoded in any of the valid formats, a `AggregatedInvalidInputKeyError` is thrown, containing a `errors` property with the errors indexed by format. If a single `options.format` was specified, a `InvalidInputKeyError` is thrown instead.
+When `options.format` is an array and `inputKey` is not encoded in any of the valid formats, a `AggregatedError` is thrown, containing a `errors` property with the errors indexed by format.
+
 
 ### composePublicKey(decomposedKey)
 
@@ -205,7 +206,7 @@ Supported private key algorithms:
 
 Supported encryption algorithms: *none*
 
-> ⚠️ It's recommended to use the newer PKCS8 format whenever possible because it's able to store more types of keys and support encryption.
+> ⚠️ It's recommended to use the newer PKCS8 & SPKI formats for private and public keys respectively because they are able to store more types of keys. Moreover, PKCS8 keys may be encrypted.
 </details>
 
 <details><summary><strong>raw-pem (public & private)</strong></summary>
@@ -223,7 +224,7 @@ Supported encryption algorithms:
 - keyDerivationFunc: `openssl-derive-bytes` (default)
 - encryptionScheme: `aes256-cbc` (default), `aes192-cbc`, `aes128-cbc`, `des-ede3-cbc`, `des-cbc`, `rc2-cbc`
 
-> ⚠️ It's recommended to use the newer PKCS8 format whenever possible because it's able to store more types of keys and support stronger encryption algorithms.
+> ⚠️ It's recommended to use the newer PKCS8 & SPKI formats for private and public keys respectively because they are able to store more types of keys. Moreover, PKCS8 keys have stronger encryption.
 </details>
 
 <details><summary><strong>pcks1-der (private)</strong></summary>
@@ -235,7 +236,7 @@ Supported private key algorithms:
 
 Supported encryption algorithms: *none*
 
-> ⚠️ It's recommended to use the newer PKCS8 format whenever possible because it's able to store more types of keys and support encryption.
+> ⚠️ It's recommended to use the newer PKCS8 format for private keys because it's able to store more types of keys and support encryption.
 </details>
 
 <details><summary><strong>pcks1-pem (private)</strong></summary>
@@ -248,7 +249,7 @@ Supported encryption algorithms:
 - keyDerivationFunc: `openssl-derive-bytes` (default)
 - encryptionScheme: `aes256-cbc` (default), `aes192-cbc`, `aes128-cbc`, `des-ede3-cbc`, `des-cbc`, `rc2-cbc`
 
-> ⚠️ It's recommended to use the newer PKCS8 format whenever possible because it's able to store more types of keys and support stronger encryption algorithms.
+> ⚠️ It's recommended to use the newer PKCS8 format for private keys because it's able to store more types of keys and support stronger encryption algorithms.
 </details>
 
 <details><summary><strong>pcks8-der (private)</strong></summary>
@@ -257,6 +258,7 @@ The `pkcs1-der` is the DER encoded ASN1 format defined in [RFC 5208](https://too
 
 Supported private key algorithms:
 - RSA keys
+- EC keys
 - ED25519 keys
 
 Supported encryption algorithms ([PKCS#5](https://tools.ietf.org/html/rfc8018)):
@@ -313,6 +315,8 @@ The following RSA key algorithms are supported:
 - `sha512-224-with-rsa-encryption`
 - `sha512-256-with-rsa-encryption`
 
+> ⚠️ At the moment, `rsaes-oaep` and `rsassa-pss` are not yet supported (see [issue #4](https://github.com/ipfs-shipyard/js-crypto-key-composer/issues/4)).
+
 All of them are expressed like so:
 
 ```js
@@ -330,7 +334,7 @@ Because they have no parameters, the example above may also be expressed like so
     keyAlgorithm: 'rsa-encryption'
 }
 ```
-Worth noting that may use the `rsa` alias in the key algorithm id, which maps to `rsa-encryption`. At the moment, `rsaes-oaep` and `rsassa-pss` are not yet supported, see ([issue #4](https://github.com/ipfs-shipyard/js-crypto-key-composer/issues/4)).
+You use the `rsa` alias in the key algorithm id, which maps to `rsa-encryption`.
 </details>
 
 <details><summary><strong>EC keys</strong></summary>
@@ -388,7 +392,7 @@ The combination of the key algorithm and the named curve are expressed like so:
 }
 ```
 
-Worth noting that may use the `ec` alias in the key algorithm id, which maps to `ec-public-key`.
+You may use the `ec` alias in the key algorithm id, which maps to `ec-public-key`.
 </details>
 
 <details><summary><strong>ED25519 keys</strong></summary>

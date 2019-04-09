@@ -1,8 +1,8 @@
-import { encode as encodePem, decode as decodePem } from 'node-forge/lib/pem';
 import { maybeDecryptPemBody, maybeEncryptPemBody } from './encryption';
 import { decomposeRawPrivateKey, composeRawPrivateKey, decomposeRawPublicKey, composeRawPublicKey } from './keys';
 import { uint8ArrayToBinaryString, binaryStringToUint8Array } from '../../util/binary';
-import { InvalidInputKeyError } from '../../util/errors';
+import { decodePem, encodePem } from '../../util/pem';
+import { DecodePemFailedError, UnsupportedAlgorithmError } from '../../util/errors';
 import { KEY_TYPES } from '../../util/key-types';
 
 const getKeyType = (pemType) => {
@@ -18,15 +18,13 @@ const getPemType = (keyAlgorithm) => {
 };
 
 export const decomposePrivateKey = (pem, options) => {
-    // Decode pem
-    const pemStr = uint8ArrayToBinaryString(pem);
-
     let decodedPem;
 
     try {
-        decodedPem = decodePem(pemStr)[0];
+        decodedPem = decodePem(pem, '* PRIVATE KEY');
     } catch (err) {
-        throw new InvalidInputKeyError('Failed to decode RAW as PEM', { originalError: err });
+        err.invalidInputKey = err instanceof DecodePemFailedError;
+        throw err;
     }
 
     // Decrypt pem if encrypted
@@ -36,7 +34,7 @@ export const decomposePrivateKey = (pem, options) => {
     const keyType = getKeyType(decodedPem.type);
 
     if (!keyType) {
-        throw new InvalidInputKeyError('Unable to extract key type from PEM');
+        throw new DecodePemFailedError('Unable to extract key type from PEM', { invalidInputKey: true });
     }
 
     // Finally decompose the key within it
@@ -57,36 +55,37 @@ export const composePrivateKey = ({ keyAlgorithm, keyData, encryptionAlgorithm }
     // Extract the pem type
     const pemKeyType = getPemType(keyAlgorithm);
 
+    if (!pemKeyType) {
+        throw new UnsupportedAlgorithmError('Unable to extract pem type from key algorithm');
+    }
+
     // Encrypt pem if password was specified
     const { pemBody, pemHeaders } = maybeEncryptPemBody(rawKey, encryptionAlgorithm, options.password);
 
     // Finally build pem
-    const pem = {
+    return encodePem({
         type: `${pemKeyType} PRIVATE KEY`,
         body: uint8ArrayToBinaryString(pemBody),
         ...pemHeaders,
-    };
-
-    return encodePem(pem).replace(/\r/g, '');
+    });
 };
 
 export const decomposePublicKey = (pem) => {
     // Decode pem
-    const pemStr = uint8ArrayToBinaryString(pem);
-
     let decodedPem;
 
     try {
-        decodedPem = decodePem(pemStr)[0];
+        decodedPem = decodePem(pem);
     } catch (err) {
-        throw new InvalidInputKeyError('Failed to decode RAW as PEM', { originalError: err });
+        err.invalidInputKey = err instanceof DecodePemFailedError;
+        throw err;
     }
 
     // Extract the key type from it
     const keyType = getKeyType(decodedPem.type);
 
     if (!keyType) {
-        throw new InvalidInputKeyError('Unable to extract key type from PEM');
+        throw new DecodePemFailedError('Unable to extract key type from PEM', { invalidInputKey: true });
     }
 
     // Finally decompose the key within it
@@ -108,14 +107,12 @@ export const composePublicKey = ({ keyAlgorithm, keyData }) => {
     const pemKeyType = getPemType(keyAlgorithm);
 
     if (!pemKeyType) {
-        throw new InvalidInputKeyError('Unable to extract pem type from key algorithm');
+        throw new UnsupportedAlgorithmError('Unable to extract pem type from key algorithm');
     }
 
     // Finally build pem
-    const pem = {
+    return encodePem({
         type: `${pemKeyType} PUBLIC KEY`,
         body: uint8ArrayToBinaryString(rawKey),
-    };
-
-    return encodePem(pem).replace(/\r/g, '');
+    });
 };

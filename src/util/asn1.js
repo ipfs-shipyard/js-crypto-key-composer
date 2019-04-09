@@ -28,7 +28,7 @@ export const decodeAsn1 = (encodedEntity, Model) => {
     try {
         decodedEntity = Model.decode(Buffer.from(encodedEntity), 'der');
     } catch (err) {
-        throw new DecodeAsn1FailedError(Model.name, { originalError: err });
+        throw new DecodeAsn1FailedError(`Failed to decode ${Model.name}`, Model.name, { originalError: err });
     }
 
     const mapValue = (value) => {
@@ -76,7 +76,7 @@ export const encodeAsn1 = (decodedEntity, Model) => {
     try {
         encodedEntity = Model.encode(decodedEntity, 'der');
     } catch (err) {
-        throw new EncodeAsn1FailedError(Model.name, { originalError: err });
+        throw new EncodeAsn1FailedError(`Failed to encode ${Model.name}`, Model.name, { originalError: err });
     }
 
     // Convert Node's buffer (a typed a array) to Uint8Array

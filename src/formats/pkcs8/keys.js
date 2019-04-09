@@ -1,9 +1,10 @@
-import { CurvePrivateKey } from './asn1-entities';
 import { decomposeRsaPrivateKey, composeRsaPrivateKey } from '../raw/keys';
-import { OIDS, FLIPPED_OIDS } from '../../util/oids';
 import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
+import { EcParameters, EcPrivateKey, CurvePrivateKey } from '../../util/asn1-entities';
+import { decodeEcPoint, encodeEcPoint, validateEcD } from '../../util/ec';
 import { hexStringToUint8Array } from '../../util/binary';
 import { UnsupportedAlgorithmError } from '../../util/errors';
+import { OIDS, FLIPPED_OIDS } from '../../util/oids';
 import { KEY_TYPES } from '../../util/key-types';
 
 const decomposeRsaPrivateKeyInfo = (privateKeyInfo) => {
@@ -55,6 +56,79 @@ const composeRsaPrivateKeyInfo = (keyAlgorithm, keyData) => {
     };
 };
 
+const decomposeEcPrivateKeyInfo = (privateKeyInfo) => {
+    const { privateKeyAlgorithm, privateKey: privateKeyAsn1 } = privateKeyInfo;
+
+    const ecParameters = decodeAsn1(privateKeyAlgorithm.parameters, EcParameters);
+    const ecPrivateKey = decodeAsn1(privateKeyAsn1, EcPrivateKey);
+
+    // Validate parameters & publicKey
+    if (ecParameters.type !== 'namedCurve') {
+        throw new UnsupportedAlgorithmError('Only EC named curves are supported');
+    }
+    if (!ecPrivateKey.publicKey) {
+        throw new UnsupportedAlgorithmError('Missing publicKey from ECPrivateKey');
+    }
+
+    // Ensure that the named curve is supported
+    const namedCurve = OIDS[ecParameters.value];
+
+    if (!namedCurve) {
+        throw new UnsupportedAlgorithmError(`Unsupported named curve OID '${ecParameters.value}'`);
+    }
+
+    // Validate & get encoded point
+    const { x, y } = decodeEcPoint(namedCurve, ecPrivateKey.publicKey.data);
+
+    return {
+        keyAlgorithm: {
+            id: 'ec-public-key',
+            namedCurve,
+        },
+        keyData: {
+            d: ecPrivateKey.privateKey,
+            x,
+            y,
+        },
+    };
+};
+
+const composeEcPrivateKeyInfo = (keyAlgorithm, keyData) => {
+    // Validate named curve
+    const namedCurveOid = FLIPPED_OIDS[keyAlgorithm.namedCurve];
+
+    if (!namedCurveOid) {
+        throw new UnsupportedAlgorithmError(`Unsupported named curve '${keyAlgorithm.namedCurve}'`);
+    }
+
+    // Validate D value
+    validateEcD(keyAlgorithm.namedCurve, keyData.d);
+
+    // Validate & encode point (public key)
+    const encodedPoint = encodeEcPoint(keyAlgorithm.namedCurve, keyData.x, keyData.y);
+
+    const ecPrivateKey = {
+        version: 1,
+        privateKey: keyData.d,
+        publicKey: {
+            unused: 0,
+            data: encodedPoint,
+        },
+    };
+
+    const ecPrivateKeyAsn1 = encodeAsn1(ecPrivateKey, EcPrivateKey);
+    const ecParametersAsn1 = encodeAsn1({ type: 'namedCurve', value: namedCurveOid }, EcParameters);
+
+    return {
+        version: 0,
+        privateKeyAlgorithm: {
+            id: FLIPPED_OIDS[keyAlgorithm.id],
+            parameters: ecParametersAsn1,
+        },
+        privateKey: ecPrivateKeyAsn1,
+    };
+};
+
 const decomposeEd25519PrivateKeyInfo = (privateKeyInfo) => {
     // See: https://tools.ietf.org/html/rfc8032#section-5.1.5
     const { privateKeyAlgorithm, privateKey } = privateKeyInfo;
@@ -83,6 +157,7 @@ export const decomposePrivateKeyInfo = (privateKeyInfo) => {
 
     switch (keyType) {
     case 'rsa': return decomposeRsaPrivateKeyInfo(privateKeyInfo);
+    case 'ec': return decomposeEcPrivateKeyInfo(privateKeyInfo);
     case 'ed25519': return decomposeEd25519PrivateKeyInfo(privateKeyInfo);
     default:
         throw new UnsupportedAlgorithmError(`Unsupported key algorithm OID '${privateKeyInfo.privateKeyAlgorithm.id}'`);
@@ -94,6 +169,7 @@ export const composePrivateKeyInfo = (keyAlgorithm, keyData) => {
 
     switch (keyType) {
     case 'rsa': return composeRsaPrivateKeyInfo(keyAlgorithm, keyData);
+    case 'ec': return composeEcPrivateKeyInfo(keyAlgorithm, keyData);
     case 'ed25519': return composeEd25519PrivateKeyInfo(keyAlgorithm, keyData);
     default:
         throw new UnsupportedAlgorithmError(`Unsupported key algorithm id '${keyAlgorithm.id}'`);

@@ -7,9 +7,11 @@ const KEYS = {
     'rsa-2': fs.readFileSync('test/fixtures/pkcs8-der/rsa-2'),
     'rsa-3': fs.readFileSync('test/fixtures/pkcs8-der/rsa-3'),
     'rsa-4': fs.readFileSync('test/fixtures/pkcs8-der/rsa-4'),
+    'ec-1': fs.readFileSync('test/fixtures/pkcs8-der/ec-1'),
     'ed25519-1': fs.readFileSync('test/fixtures/pkcs8-der/ed25519-1'),
     'ed25519-2': fs.readFileSync('test/fixtures/pkcs8-der/ed25519-2'),
     'invalid-1': fs.readFileSync('test/fixtures/pkcs8-der/invalid-1'),
+
     'enc-1': fs.readFileSync('test/fixtures/pkcs8-der/enc-1'),
     'enc-2': fs.readFileSync('test/fixtures/pkcs8-der/enc-2'),
     'enc-3': fs.readFileSync('test/fixtures/pkcs8-der/enc-3'),
@@ -50,7 +52,11 @@ describe('decomposePrivateKey', () => {
         expect(decomposePrivateKey(KEYS['rsa-4'], { format: 'pkcs8-der', password })).toMatchSnapshot();
     });
 
-    it('should decompose ED25519 key', () => {
+    it('should decompose a EC key, secp256k1', () => {
+        expect(decomposePrivateKey(KEYS['ec-1'], { format: 'pkcs8-der' })).toMatchSnapshot();
+    });
+
+    it('should decompose a ED25519 key', () => {
         expect(decomposePrivateKey(KEYS['ed25519-1'], { format: 'pkcs8-der' })).toMatchSnapshot();
     });
 
@@ -84,7 +90,7 @@ describe('decomposePrivateKey', () => {
             decomposePrivateKey('', { format: 'pkcs8-der' });
         } catch (err) {
             expect(err.message).toBe('Failed to decode PrivateKeyInfo');
-            expect(err.code).toBe('INVALID_INPUT_KEY');
+            expect(err.code).toBe('DECODE_ASN1_FAILED');
         }
     });
 
@@ -215,7 +221,7 @@ describe('decomposePrivateKey', () => {
                 decomposePrivateKey(KEYS['enc-invalid-6'], { format: 'pkcs8-der', password });
             } catch (err) {
                 expect(err.message).toBe('Failed to decode PrivateKeyInfo');
-                expect(err.code).toBe('INVALID_INPUT_KEY');
+                expect(err.code).toBe('DECODE_ASN1_FAILED');
             }
         });
 
@@ -264,7 +270,14 @@ describe('composePrivateKey', () => {
         expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['rsa-4']));
     });
 
-    it('should compose ED25519 key', () => {
+    it('should compose a EC key, secp256k1 (mirroring)', () => {
+        const decomposedKey = decomposePrivateKey(KEYS['ec-1'], { format: 'pkcs8-der' });
+        const composedKey = composePrivateKey(decomposedKey);
+
+        expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['ec-1']));
+    });
+
+    it('should compose a ED25519 key (mirroring)', () => {
         const decomposedKey = decomposePrivateKey(KEYS['ed25519-1'], { format: 'pkcs8-der' });
         const composedKey = composePrivateKey(decomposedKey);
 
@@ -425,6 +438,7 @@ describe('composePrivateKey', () => {
         });
 
         it.skip('should compose an encrypted key with PBKDF2 prf SHA224 variant (mirroring)', () => {
+            // See: https://github.com/digitalbazaar/forge/issues/669
             const decomposedKey = decomposePrivateKey(KEYS['enc-10'], { format: 'pkcs8-der', password });
             const composedKey = composePrivateKey(decomposedKey, { password });
 

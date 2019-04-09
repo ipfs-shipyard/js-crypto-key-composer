@@ -1,5 +1,6 @@
-import { RsaPrivateKey, RsaPublicKey, EcPrivateKey } from './asn1-entities';
 import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
+import { RsaPrivateKey, RsaPublicKey, EcPrivateKey } from '../../util/asn1-entities';
+import { decodeEcPoint, encodeEcPoint, validateEcD } from '../../util/ec';
 import { UnsupportedAlgorithmError } from '../../util/errors';
 import { OIDS, FLIPPED_OIDS } from '../../util/oids';
 import { KEY_TYPES } from '../../util/key-types';
@@ -44,30 +45,27 @@ export const composeRsaPublicKey = (keyAlgorithm, keyData) =>
 
 export const decomposeEcPrivateKey = (ecPrivateKeyAsn1) => {
     const ecPrivateKey = decodeAsn1(ecPrivateKeyAsn1, EcPrivateKey);
-    const namedCurve = OIDS[ecPrivateKey.parameters];
+
+    // Validate parameters & publicKey
+    if (!ecPrivateKey.parameters) {
+        throw new UnsupportedAlgorithmError('Missing parameters from ECPrivateKey');
+    }
+    if (ecPrivateKey.parameters.type !== 'namedCurve') {
+        throw new UnsupportedAlgorithmError('Only EC named curves are supported');
+    }
+    if (!ecPrivateKey.publicKey) {
+        throw new UnsupportedAlgorithmError('Missing publicKey from ECPrivateKey');
+    }
+
+    // Ensure that the named curve is supported
+    const namedCurve = OIDS[ecPrivateKey.parameters.value];
 
     if (!namedCurve) {
-        throw new UnsupportedAlgorithmError(`Unsupported named curve OID '${ecPrivateKey.parameters}'`);
+        throw new UnsupportedAlgorithmError(`Unsupported named curve OID '${ecPrivateKey.parameters.value}'`);
     }
 
-    if (!ecPrivateKey.publicKey) {
-        throw new UnsupportedAlgorithmError('Public key must be defined');
-    }
-
-    const encodedPoint = ecPrivateKey.publicKey.data;
-
-    if (encodedPoint[0] !== 4) {
-        throw new UnsupportedAlgorithmError('Uncompressed key points are not supported');
-    }
-
-    // Get the byte length based on the curve name, by extract the number of bits from it
-    // and converting it to bytes
-    // Note that the number of bits may not be multiples of 8
-    const byteLength = Math.floor((Number(namedCurve.match(/\d+/)[0]) + 7) / 8);
-
-    if (encodedPoint.length !== (byteLength * 2) + 1) {
-        throw new UnsupportedAlgorithmError(`Expecting public key to have length ${(byteLength * 2) - 1}, got ${encodedPoint.length} instead`);
-    }
+    // Validate & encode point (public key)
+    const { x, y } = decodeEcPoint(namedCurve, ecPrivateKey.publicKey.data);
 
     return {
         keyAlgorithm: {
@@ -75,35 +73,37 @@ export const decomposeEcPrivateKey = (ecPrivateKeyAsn1) => {
             namedCurve,
         },
         keyData: {
-            x: encodedPoint.slice(1, byteLength + 1),
-            y: encodedPoint.slice(byteLength + 1),
             d: ecPrivateKey.privateKey,
+            x,
+            y,
         },
     };
 };
 
 export const composeEcPrivateKey = (keyAlgorithm, keyData) => {
+    // Validate named curve
     const namedCurveOid = FLIPPED_OIDS[keyAlgorithm.namedCurve];
 
     if (!namedCurveOid) {
         throw new UnsupportedAlgorithmError(`Unsupported named curve '${keyAlgorithm.namedCurve}'`);
     }
 
-    if (!keyData.y) {
-        throw new UnsupportedAlgorithmError('Uncompressed key points are not supported (y must be specified)');
-    }
+    // Validate D value
+    validateEcD(keyAlgorithm.namedCurve, keyData.d);
+
+    // Encode point (public key)
+    const encodedPoint = encodeEcPoint(keyAlgorithm.namedCurve, keyData.x, keyData.y);
 
     const ecPrivateKey = {
         version: 1,
         privateKey: keyData.d,
-        parameters: namedCurveOid,
+        parameters: {
+            type: 'namedCurve',
+            value: namedCurveOid,
+        },
         publicKey: {
             unused: 0,
-            data: new Uint8Array([
-                4,
-                ...keyData.x,
-                ...keyData.y,
-            ]),
+            data: encodedPoint,
         },
     };
 

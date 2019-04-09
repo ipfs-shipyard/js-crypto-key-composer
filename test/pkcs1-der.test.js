@@ -36,7 +36,7 @@ describe('decomposePrivateKey', () => {
             decomposePrivateKey('', { format: 'pkcs1-der' });
         } catch (err) {
             expect(err.message).toBe('Failed to decode RSAPrivateKey');
-            expect(err.code).toBe('INVALID_INPUT_KEY');
+            expect(err.code).toBe('DECODE_ASN1_FAILED');
         }
     });
 });

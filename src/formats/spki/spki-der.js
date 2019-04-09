@@ -1,7 +1,7 @@
 import { decomposeSubjectPublicKeyInfo, composeSubjectPublicKeyInfo } from './keys';
-import { SubjectPublicKeyInfo } from './asn1-entities';
 import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
-import { InvalidInputKeyError, DecodeAsn1FailedError } from '../../util/errors';
+import { SubjectPublicKeyInfo } from '../../util/asn1-entities';
+import { DecodeAsn1FailedError } from '../../util/errors';
 
 export const decomposePublicKey = (subjectPublicKeyInfoAsn1) => {
     // Attempt to decode as SubjectPublicKeyInfo
@@ -10,10 +10,7 @@ export const decomposePublicKey = (subjectPublicKeyInfoAsn1) => {
     try {
         subjectPublicKeyInfo = decodeAsn1(subjectPublicKeyInfoAsn1, SubjectPublicKeyInfo);
     } catch (err) {
-        if (err instanceof DecodeAsn1FailedError) {
-            throw new InvalidInputKeyError(err.message, { originalError: err });
-        }
-
+        err.invalidInputKey = err instanceof DecodeAsn1FailedError;
         throw err;
     }
 

@@ -1,5 +1,5 @@
 import { decomposeRawPrivateKey, composeRawPrivateKey, decomposeRawPublicKey, composeRawPublicKey, SUPPORTED_KEY_TYPES } from './keys';
-import { UnsupportedAlgorithmError, DecodeAsn1FailedError, InvalidInputKeyError } from '../../util/errors';
+import { UnsupportedAlgorithmError, DecodeAsn1FailedError, AggregatedError } from '../../util/errors';
 
 export const decomposePrivateKey = (privateKeyAsn1) => {
     // Iterate over all supported key types, until one succeeds
@@ -21,7 +21,11 @@ export const decomposePrivateKey = (privateKeyAsn1) => {
     }
 
     if (!decomposedKey) {
-        throw new InvalidInputKeyError(`The input key is not one of: ${SUPPORTED_KEY_TYPES.private.join(', ')}`);
+        throw new AggregatedError(
+            `The input key is not one of: ${SUPPORTED_KEY_TYPES.private.join(', ')}`,
+            errors,
+            { invalidInputKey: true }
+        );
     }
 
     const { keyAlgorithm, keyData } = decomposedKey;
@@ -62,7 +66,11 @@ export const decomposePublicKey = (publicKeyAsn1) => {
     }
 
     if (!decomposedKey) {
-        throw new InvalidInputKeyError(`The input key is not one of: ${SUPPORTED_KEY_TYPES.public.join(', ')}`);
+        throw new AggregatedError(
+            `The input key is not one of: ${SUPPORTED_KEY_TYPES.public.join(', ')}`,
+            errors,
+            { invalidInputKey: true }
+        );
     }
 
     const { keyAlgorithm, keyData } = decomposedKey;

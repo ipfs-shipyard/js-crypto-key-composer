@@ -5,6 +5,7 @@ import { typedArrayToUint8Array } from '../src/util/binary';
 const KEYS = {
     'rsa-1': fs.readFileSync('test/fixtures/pkcs1-pem/rsa-1'),
     'rsa-2': fs.readFileSync('test/fixtures/pkcs1-pem/rsa-2'),
+
     'enc-1': fs.readFileSync('test/fixtures/pkcs1-pem/enc-1'),
     'enc-2': fs.readFileSync('test/fixtures/pkcs1-pem/enc-2'),
     'enc-3': fs.readFileSync('test/fixtures/pkcs1-pem/enc-3'),
@@ -41,8 +42,8 @@ describe('decomposePrivateKey', () => {
         try {
             decomposePrivateKey('', { format: 'pkcs1-pem' });
         } catch (err) {
-            expect(err.message).toBe('Failed to decode PKCS1 as PEM');
-            expect(err.code).toBe('INVALID_INPUT_KEY');
+            expect(err.message).toBe('Failed to decode PEM');
+            expect(err.code).toBe('DECODE_PEM_FAILED');
         }
     });
 

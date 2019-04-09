@@ -7,6 +7,8 @@ const PRIVATE_KEYS = {
     'rsa-2': fs.readFileSync('test/fixtures/raw-pem/rsa-2'),
     'ec-1': fs.readFileSync('test/fixtures/raw-pem/ec-1'),
     'ec-2': fs.readFileSync('test/fixtures/raw-pem/ec-2'),
+    'ec-3': fs.readFileSync('test/fixtures/raw-pem/ec-3'),
+
     'enc-1': fs.readFileSync('test/fixtures/raw-pem/enc-1'),
     'enc-2': fs.readFileSync('test/fixtures/raw-pem/enc-2'),
     'enc-3': fs.readFileSync('test/fixtures/raw-pem/enc-3'),
@@ -41,6 +43,10 @@ describe('decomposePrivateKey', () => {
         expect(decomposePrivateKey(PRIVATE_KEYS['ec-2'], { format: 'raw-pem', password })).toMatchSnapshot();
     });
 
+    it('should decompose a EC key with parameters', () => {
+        expect(decomposePrivateKey(PRIVATE_KEYS['ec-3'], { format: 'raw-pem', password })).toMatchSnapshot();
+    });
+
     it('should support also Uint8Array, ArrayBuffer and string besides node.js Buffer', () => {
         const nodeBuffer = fs.readFileSync('test/fixtures/raw-pem/rsa-1');
 
@@ -55,8 +61,8 @@ describe('decomposePrivateKey', () => {
         try {
             decomposePrivateKey('', { format: 'raw-pem' });
         } catch (err) {
-            expect(err.message).toBe('Failed to decode RAW as PEM');
-            expect(err.code).toBe('INVALID_INPUT_KEY');
+            expect(err.message).toBe('Failed to decode PEM');
+            expect(err.code).toBe('DECODE_PEM_FAILED');
         }
     });
 
@@ -72,8 +78,8 @@ Zm9v
         try {
             decomposePrivateKey(pem, { format: 'raw-pem' });
         } catch (err) {
-            expect(err.message).toBe('Unable to extract key type from PEM');
-            expect(err.code).toBe('INVALID_INPUT_KEY');
+            expect(err.message).toMatch('Could not find pem message matching patterns:');
+            expect(err.code).toBe('DECODE_PEM_FAILED');
         }
     });
 
@@ -383,8 +389,8 @@ describe('decomposePublicKey', () => {
         try {
             decomposePublicKey('', { format: 'raw-pem' });
         } catch (err) {
-            expect(err.message).toBe('Failed to decode RAW as PEM');
-            expect(err.code).toBe('INVALID_INPUT_KEY');
+            expect(err.message).toBe('Failed to decode PEM');
+            expect(err.code).toBe('DECODE_PEM_FAILED');
         }
     });
 
@@ -401,7 +407,7 @@ Zm9v
             decomposePublicKey(pem, { format: 'raw-pem' });
         } catch (err) {
             expect(err.message).toBe('Unable to extract key type from PEM');
-            expect(err.code).toBe('INVALID_INPUT_KEY');
+            expect(err.code).toBe('DECODE_PEM_FAILED');
         }
     });
 

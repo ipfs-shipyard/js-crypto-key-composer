@@ -83,6 +83,7 @@
     "buffer": "^5.2.1",
     "clone-deep": "^4.0.1",
     "deep-for-each": "^3.0.0",
+    "matcher": "^1.1.1",
     "node-forge": "^0.8.1"
   }
 }

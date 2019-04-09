@@ -45,12 +45,10 @@ describe('decomposePrivateKey', () => {
         try {
             decomposePrivateKey(PRIVATE_KEYS['ec-2'], { format: 'raw-der' });
         } catch (err) {
-            expect(err.message).toBe('Uncompressed key points are not supported');
+            expect(err.message).toBe('Only uncompressed EC points are supported');
             expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
         }
     });
-
-    it.skip('should fail to if the public key is not present', () => {});
 
     it('should also support Uint8Array, ArrayBuffer and string besides Node\'s Buffer', () => {
         const nodeBuffer = fs.readFileSync('test/fixtures/raw-der/rsa-1');
@@ -61,13 +59,15 @@ describe('decomposePrivateKey', () => {
     });
 
     it('should fail if the input key is invalid', () => {
-        expect.assertions(2);
+        expect.assertions(4);
 
         try {
             decomposePrivateKey('', { format: 'raw-der' });
         } catch (err) {
             expect(err.message).toMatch('The input key is not one of:');
-            expect(err.code).toBe('INVALID_INPUT_KEY');
+            expect(err.code).toBe('AGGREGATED_ERROR');
+            expect(err.errors.rsa.code).toBe('DECODE_ASN1_FAILED');
+            expect(err.errors.ec.code).toBe('DECODE_ASN1_FAILED');
         }
     });
 });
@@ -129,7 +129,7 @@ describe('composePrivateKey', () => {
                 },
             });
         } catch (err) {
-            expect(err.message).toBe('Uncompressed key points are not supported (y must be specified)');
+            expect(err.message).toBe('Only uncompressed EC points are supported (y must be specified)');
             expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
         }
     });
@@ -209,13 +209,14 @@ describe('decomposePublicKey', () => {
     });
 
     it('should fail if the input key is invalid', () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         try {
             decomposePublicKey('', { format: 'raw-der' });
         } catch (err) {
             expect(err.message).toMatch('The input key is not one of:');
-            expect(err.code).toBe('INVALID_INPUT_KEY');
+            expect(err.code).toBe('AGGREGATED_ERROR');
+            expect(err.errors.rsa.code).toBe('DECODE_ASN1_FAILED');
         }
     });
 });

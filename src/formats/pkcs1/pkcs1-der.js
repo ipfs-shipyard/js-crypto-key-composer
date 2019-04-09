@@ -1,5 +1,5 @@
 import { decomposeRsaPrivateKey, composeRsaPrivateKey } from '../raw/keys';
-import { UnsupportedAlgorithmError, DecodeAsn1FailedError, InvalidInputKeyError } from '../../util/errors';
+import { UnsupportedAlgorithmError, DecodeAsn1FailedError } from '../../util/errors';
 import { KEY_TYPES } from '../../util/key-types';
 
 export const decomposePrivateKey = (rsaPrivateKeyAsn1) => {
@@ -8,10 +8,7 @@ export const decomposePrivateKey = (rsaPrivateKeyAsn1) => {
     try {
         decomposedRsaKey = decomposeRsaPrivateKey(rsaPrivateKeyAsn1);
     } catch (err) {
-        if (err instanceof DecodeAsn1FailedError) {
-            throw new InvalidInputKeyError(err.message, { originalError: err });
-        }
-
+        err.invalidInputKey = err instanceof DecodeAsn1FailedError;
         throw err;
     }
 

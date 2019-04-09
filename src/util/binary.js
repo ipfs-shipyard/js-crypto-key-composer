@@ -1,3 +1,5 @@
+/* eslint-disable no-bitwise */
+
 export const binaryStringToUint8Array = (str) => {
     const len = str.length;
     const uint8Array = new Uint8Array(len);
@@ -24,12 +26,10 @@ export const typedArrayToUint8Array = (typedArray) =>
 export const bnToUint8Array = (bn) => {
     const numArray = bn.toArray();
 
-    /* eslint-disable no-bitwise */
     // Remove useless sign
     if (!bn.negative && numArray[0] & 0x80) {
         numArray.unshift(0);
     }
-    /* eslint-enable no-bitwise */
 
     return Uint8Array.from(numArray);
 };
@@ -43,9 +43,7 @@ export const uint8ArrayToInteger = (uint8Array) => {
     let byteCount = 0;
 
     do {
-        /* eslint-disable no-bitwise */
         integer = (integer << 8) + uint8Array[byteCount];
-        /* eslint-enable no-bitwise */
         byteCount += 1;
     } while (uint8Array.byteLength > byteCount);
 
