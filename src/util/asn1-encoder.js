@@ -7,7 +7,6 @@ import { EncodeAsn1FailedError, DecodeAsn1FailedError } from './errors';
 
 // Ensure that all asn1 objid are returned as strings separated with '.'
 // See https://github.com/indutny/asn1.js/blob/b99ce086320e0123331e6272f6de75548c6855fa/lib/asn1/decoders/der.js#L198
-// See https://github.com/indutny/asn1.js/blob/b99ce086320e0123331e6272f6de75548c6855fa/lib/asn1/encoders/der.js#L103
 export const objidValues = new Proxy({}, {
     get: (obj, key) => {
         if (key === 'hasOwnProperty') {
