@@ -77,10 +77,9 @@ The `inputKey` may be a TypedArray (including Node's Buffer), an ArrayBuffer or 
 
 Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong. When `options.format` is an array, this function will attempt to decompose the key for the specified formats, in order and one by one. It will succeed if the key is using one of the formats or fail if it's using another format, throwing an AggregatedError containing a `errors` property with the errors indexed by format.
 
-
 ### composePrivateKey(decomposedKey, [options])
 
-Composes a private key from its parts: [`format`](#formats), [`keyAlgorithm`](#key-algorithms), [`keyData`](#key-data) and[`encryptionAlgorithm`](#encryption-algorithms). This function is the inverse of `decomposePrivateKey`.
+Composes a private key from its parts: [`format`](#formats), [`keyAlgorithm`](#key-algorithms), [`keyData`](#key-data) and [`encryptionAlgorithm`](#encryption-algorithms). This function is the inverse of `decomposePrivateKey`.
 
 ```js
 import { composePrivateKey } from 'crypto-key-composer';

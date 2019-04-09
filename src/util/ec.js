@@ -28,7 +28,7 @@ export const encodeEcPoint = (namedCurve, x, y) => {
         throw new UnsupportedAlgorithmError('Only uncompressed EC points are supported (y must be specified)');
     }
     if (!x || x.length !== fieldSizeBytes || !y || y.length !== fieldSizeBytes) {
-        throw new UnsupportedAlgorithmError(`Expecting x & y point to have length ${fieldSizeBytes} bytes`);
+        throw new UnsupportedAlgorithmError(`Expecting x & y points to have length ${fieldSizeBytes} bytes`);
     }
 
     return new Uint8Array([
