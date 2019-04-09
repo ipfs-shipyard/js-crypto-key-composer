@@ -5,6 +5,11 @@ import { UnsupportedAlgorithmError } from '../../util/errors';
 import { OIDS, FLIPPED_OIDS } from '../../util/oids';
 import { KEY_TYPES } from '../../util/key-types';
 
+export const SUPPORTED_KEY_TYPES = {
+    private: ['rsa', 'ec'],
+    public: ['rsa'],
+};
+
 export const decomposeRsaPrivateKey = (rsaPrivateKeyAsn1) => {
     const { version, ...keyData } = decodeAsn1(rsaPrivateKeyAsn1, RsaPrivateKey);
 
@@ -111,11 +116,6 @@ export const composeEcPrivateKey = (keyAlgorithm, keyData) => {
     };
 
     return encodeAsn1(ecPrivateKey, EcPrivateKey);
-};
-
-export const SUPPORTED_KEY_TYPES = {
-    private: ['rsa', 'ec'],
-    public: ['rsa'],
 };
 
 export const decomposeRawPrivateKey = (keyType, privateKeyAsn1) => {

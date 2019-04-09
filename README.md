@@ -37,7 +37,7 @@ Moreover, some of this library's dependencies use the native Node [Buffer](https
 
 ### decomposePrivateKey(inputKey, [options])
 
-Parses a public key, extracting information containing its [`format`](#formats), [`keyAlgorithm`](#key-algorithms), [`keyData`](#key-data) and [`encryptionAlgorithm`](#encryption-algorithms).
+Parses a private key, extracting information containing its [`format`](#formats), [`keyAlgorithm`](#key-algorithms), [`keyData`](#key-data) and [`encryptionAlgorithm`](#encryption-algorithms).
 
 ```js
 import { decomposePrivateKey } from 'crypto-key-composer';
@@ -64,10 +64,9 @@ const myPrivateDecomposedKey = decomposePrivateKey(myPrivatePemKey)
 // }
 ```
 
-The `inputKey` may be a TypedArray (including Node's Buffer), a ArrayBuffer or a binary string.
+The `inputKey` may be a TypedArray (including Node's Buffer), an ArrayBuffer or a binary string.
 
 > ⚠️ Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `sha512-with-rsa-encryption`, `rsa-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getKeyTypeFromAlgorithm`](#getkeytypefromalgorithmkeyalgorithm) to properly get the key type.
-</details>
 
 **Available options**:
 
@@ -76,8 +75,8 @@ The `inputKey` may be a TypedArray (including Node's Buffer), a ArrayBuffer or a
 | format | string/Array | `['raw-pem', 'pkcs8-pem']` | Limit the parsing to one or more [`formats`](#formats) |
 | password | string | | The password to use to decrypt the key |
 
-Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong.
-When `options.format` is an array and `inputKey` is not encoded in any of the valid formats, a `AggregatedError` is thrown, containing a `errors` property with the errors indexed by format.
+Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong. When `options.format` is an array, this function will attempt to decompose the key for the specified formats, in order and one by one. It will succeed if the key is using one of the formats or fail if it's using another format, throwing an AggregatedError containing a `errors` property with the errors indexed by format.
+
 
 ### composePrivateKey(decomposedKey, [options])
 
@@ -137,10 +136,9 @@ const myDecomposedPublicKey = decomposePublicKey(myPublicPemKey)
 // }
 ```
 
-The `inputKey` may be a TypedArray (including Node's Buffer), a ArrayBuffer or a binary string.
+The `inputKey` may be a TypedArray (including Node's Buffer), an ArrayBuffer or a binary string.
 
 > ⚠️ Do not use the `keyAlgorithm.id` to identify the key type. The reason is that several identifiers map to the same key type. As an example, `rsa-encryption`, `rsaes-oaep` and `rsassa-pss` are all RSA keys. Instead, use [`getKeyTypeFromAlgorithm`](#get-key-type-from-algorithm) to properly get the key type.
-</details>
 
 Available options:
 
@@ -148,9 +146,7 @@ Available options:
 | ---- | ---- | ------- | ----------- |
 | format | string/Array | `['raw-pem', 'spki-pem']` | Limit the parsing to one or more formats |
 
-Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong.
-When `options.format` is an array and `inputKey` is not encoded in any of the valid formats, a `AggregatedError` is thrown, containing a `errors` property with the errors indexed by format.
-
+Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong. When `options.format` is an array, this function will attempt to decompose the key for the specified formats, in order and one by one. It will succeed if the key is using one of the formats or fail if it's using another format, throwing an AggregatedError containing a `errors` property with the errors indexed by format.
 
 ### composePublicKey(decomposedKey)
 
@@ -170,6 +166,7 @@ const myPublicPemKey = composePublicKey({
     }
 });
 ```
+
 The return value depends on the format. PEM based formats return a regular string while DER based formats return a Uint8Array.
 
 Meaningful [errors](src/util/errors.js) with codes are thrown if something went wrong.
@@ -216,7 +213,7 @@ The `raw-pem` is the PEM encoded version of `raw-der` and is defined in [RFC 142
 Supported public key algorithms:
 - Just the standard `rsa-encryption` RSA algorithm (or the `rsa` alias)
 
-Supported private key algorithms: *same as `pkcs1-der`*
+Supported private key algorithms:
 - Just the standard `rsa-encryption` RSA algorithm (or the `rsa` alias)
 - Just the standard `ec-public-key` RSA algorithm (or the `ec` alias)
 
@@ -243,7 +240,8 @@ Supported encryption algorithms: *none*
 
 The `pkcs1-pem` is the PEM encoded version of `pkcs1-der` and is defined in [RFC 1421](https://tools.ietf.org/html/rfc1421). It's a subset of the `raw-pem` format, supporting only RSA keys.
 
-Supported private key algorithms: *same as `pkcs1-der`*
+Supported private key algorithms:
+- Just the standard `rsa-encryption` RSA algorithm (or the `rsa` alias)
 
 Supported encryption algorithms:
 - keyDerivationFunc: `openssl-derive-bytes` (default)
@@ -254,7 +252,7 @@ Supported encryption algorithms:
 
 <details><summary><strong>pcks8-der (private)</strong></summary>
 
-The `pkcs1-der` is the DER encoded ASN1 format defined in [RFC 5208](https://tools.ietf.org/html/rfc5208) and [RFC 5985](https://tools.ietf.org/html/rfc5958).
+The `pkcs8-der` is the DER encoded ASN1 format defined in [RFC 5208](https://tools.ietf.org/html/rfc5208) and [RFC 5985](https://tools.ietf.org/html/rfc5958).
 
 Supported private key algorithms:
 - RSA keys
@@ -270,16 +268,21 @@ Supported encryption algorithms ([PKCS#5](https://tools.ietf.org/html/rfc8018)):
 
 The `pkcs8-pem` is the PEM encoded version of `pkcs8-der` and is defined in [RFC 1421](https://tools.ietf.org/html/rfc1421).
 
-Supported private key algorithms: *same as `pkcs8-der`*
+Supported private key algorithms:
+- RSA keys
+- EC keys
+- ED25519 keys
 
-Supported encryption algorithms: *same as `pkcs8-der`*
+Supported encryption algorithms ([PKCS#5](https://tools.ietf.org/html/rfc8018)):
+- keyDerivationFunc: `pbkdf2` (default)
+- encryptionScheme: `aes256-cbc` (default), `aes192-cbc`, `aes128-cbc`, `des-ede3-cbc`, `des-cbc`, `rc2-cbc`
 </details>
 
 <details><summary><strong>spki-der (public)</strong></summary>
 
 The `spki-der` is a format to represent various types of public keys and is defined in [RFC 5280](https://tools.ietf.org/html/rfc5280#page-25).
 
-Supported private key algorithms:
+Supported public key algorithms:
 - RSA keys
 - EC keys
 - ED25519 keys
@@ -291,7 +294,10 @@ Supported encryption algorithms: *does not apply*
 
 The `spki-pem` is the PEM encoded version of `spki-der` and is defined in [RFC 1421](https://tools.ietf.org/html/rfc1421).
 
-Supported key algorithms: *same as `spki-der`*
+Supported public key algorithms:
+- RSA keys
+- EC keys
+- ED25519 keys
 
 Supported encryption algorithms: *does not apply*
 </details>
@@ -334,7 +340,8 @@ Because they have no parameters, the example above may also be expressed like so
     keyAlgorithm: 'rsa-encryption'
 }
 ```
-You use the `rsa` alias in the key algorithm id, which maps to `rsa-encryption`.
+
+You may use the `rsa` alias in the key algorithm id, which maps to `rsa-encryption`.
 </details>
 
 <details><summary><strong>EC keys</strong></summary>
@@ -407,7 +414,7 @@ ED25519 keys just have a single algorithm, `ed25519`, and may be expressed like 
 }
 ```
 
-Because there's no parameters, the example above may also be expressed like so:
+Because there are no parameters, the example above may also be expressed like so:
 
 ```js
 {
@@ -529,7 +536,7 @@ The `openssl-derive-bytes` is used when encrypting PKCS#1 PEM keys and was pione
 }
 ```
 
-Because there's no parameters, the example above may also be expressed like so:
+Because there are no parameters, the example above may also be expressed like so:
 
 ```js
 {
@@ -619,7 +626,7 @@ The supported DES algorithms are `des-cbc` and `des-ede3-cbc` (triple DES). Here
 }
 ```
 
-The parameters may be omitedif you don't need to tweak them. In that case, you may express the example above like so:
+The parameters may be omited if you don't need to tweak them. In that case, you may express the example above like so:
 
 ```js
 {
