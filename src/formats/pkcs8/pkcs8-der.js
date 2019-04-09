@@ -1,6 +1,6 @@
 import { decomposePrivateKeyInfo, composePrivateKeyInfo } from './keys';
 import { maybeDecryptPrivateKeyInfo, maybeEncryptPrivateKeyInfo } from './encryption';
-import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
+import { decodeAsn1, encodeAsn1 } from '../../util/asn1-encoder';
 import { PrivateKeyInfo } from '../../util/asn1-entities';
 import { DecodeAsn1FailedError } from '../../util/errors';
 

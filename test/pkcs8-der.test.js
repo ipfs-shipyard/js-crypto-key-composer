@@ -8,10 +8,10 @@ const KEYS = {
     'rsa-3': fs.readFileSync('test/fixtures/pkcs8-der/rsa-3'),
     'rsa-4': fs.readFileSync('test/fixtures/pkcs8-der/rsa-4'),
     'ec-1': fs.readFileSync('test/fixtures/pkcs8-der/ec-1'),
+    'ec-invalid-1': fs.readFileSync('test/fixtures/pkcs8-der/ec-invalid-1'),
     'ed25519-1': fs.readFileSync('test/fixtures/pkcs8-der/ed25519-1'),
     'ed25519-2': fs.readFileSync('test/fixtures/pkcs8-der/ed25519-2'),
     'invalid-1': fs.readFileSync('test/fixtures/pkcs8-der/invalid-1'),
-
     'enc-1': fs.readFileSync('test/fixtures/pkcs8-der/enc-1'),
     'enc-2': fs.readFileSync('test/fixtures/pkcs8-der/enc-2'),
     'enc-3': fs.readFileSync('test/fixtures/pkcs8-der/enc-3'),
@@ -54,6 +54,17 @@ describe('decomposePrivateKey', () => {
 
     it('should decompose a EC key, secp256k1', () => {
         expect(decomposePrivateKey(KEYS['ec-1'], { format: 'pkcs8-der' })).toMatchSnapshot();
+    });
+
+    it('should fail to decompose a EC key with an invalid curve', () => {
+        expect.assertions(2);
+
+        try {
+            decomposePrivateKey(KEYS['ec-invalid-1'], { format: 'pkcs8-der' });
+        } catch (err) {
+            expect(err.message).toBe('Unsupported named curve OID \'0.20.999\'');
+            expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
+        }
     });
 
     it('should decompose a ED25519 key', () => {
@@ -277,6 +288,25 @@ describe('composePrivateKey', () => {
         expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['ec-1']));
     });
 
+    it('should fail to compose a EC key with an invalid curve', () => {
+        const decomposedKey = decomposePrivateKey(KEYS['ec-1'], { format: 'pkcs8-der' });
+
+        expect.assertions(2);
+
+        try {
+            composePrivateKey({
+                ...decomposedKey,
+                keyAlgorithm: {
+                    ...decomposedKey.keyAlgorithm,
+                    namedCurve: 'foo',
+                },
+            }, { format: 'pkcs8-der' });
+        } catch (err) {
+            expect(err.message).toBe('Unsupported named curve \'foo\'');
+            expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
+        }
+    });
+
     it('should compose a ED25519 key (mirroring)', () => {
         const decomposedKey = decomposePrivateKey(KEYS['ed25519-1'], { format: 'pkcs8-der' });
         const composedKey = composePrivateKey(decomposedKey);
@@ -464,6 +494,30 @@ describe('composePrivateKey', () => {
             const composedKey = composePrivateKey(decomposedKey, { password });
 
             expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['enc-13']));
+        });
+
+        it('should fail if the keyLength is smaller than the expected length of the encryption scheme', () => {
+            const decomposedKey = decomposePrivateKey(KEYS['enc-1'], { format: 'pkcs8-der', password });
+
+            expect.assertions(2);
+
+            try {
+                composePrivateKey({
+                    ...decomposedKey,
+                    encryptionAlgorithm: {
+                        ...decomposedKey.encryptionAlgorithm,
+                        keyDerivationFunc: {
+                            ...decomposedKey.encryptionAlgorithm.keyDerivationFunc,
+                            keyLength: 1,
+                        },
+                    },
+                }, {
+                    password,
+                });
+            } catch (err) {
+                expect(err.message).toBe('The specified key length must be equal to 16 (or omitted)');
+                expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
+            }
         });
 
         it('should fail if the key derivation func prf in the PBES2 encryption algorithm is not supported', () => {

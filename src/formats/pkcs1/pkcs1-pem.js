@@ -1,6 +1,6 @@
 import { maybeDecryptPemBody, maybeEncryptPemBody } from '../raw/encryption';
 import { decomposePrivateKey as decomposeDerPrivateKey, composePrivateKey as composeDerPrivateKey } from './pkcs1-der';
-import { decodePem, encodePem } from '../../util/pem';
+import { decodePem, encodePem } from '../../util/pem-encoder';
 import { uint8ArrayToBinaryString } from '../../util/binary';
 import { DecodePemFailedError } from '../../util/errors';
 

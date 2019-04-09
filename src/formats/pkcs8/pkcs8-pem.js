@@ -1,6 +1,6 @@
 import { decomposePrivateKey as decomposeDerPrivateKey, composePrivateKey as composeDerPrivateKey } from './pkcs8-der';
 import { binaryStringToUint8Array, uint8ArrayToBinaryString } from '../../util/binary';
-import { decodePem, encodePem } from '../../util/pem';
+import { decodePem, encodePem } from '../../util/pem-encoder';
 import { DecodePemFailedError } from '../../util/errors';
 
 export const decomposePrivateKey = (pem, options) => {

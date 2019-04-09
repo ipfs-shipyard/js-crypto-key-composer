@@ -57,6 +57,7 @@ export const decomposePublicKey = (publicKeyAsn1) => {
             decomposedKey = decomposeRawPublicKey(keyType, publicKeyAsn1);
             break;
         } catch (err) {
+            /* istanbul ignore else */
             if (err instanceof DecodeAsn1FailedError) {
                 errors[keyType] = err;
             } else {

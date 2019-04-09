@@ -6,6 +6,7 @@ const KEYS = {
     'rsa-1': fs.readFileSync('test/fixtures/spki-der/rsa-1.pub'),
     'ed25519-1': fs.readFileSync('test/fixtures/spki-der/ed25519-1.pub'),
     'ec-1': fs.readFileSync('test/fixtures/spki-der/ec-1.pub'),
+    'ec-invalid-1': fs.readFileSync('test/fixtures/spki-der/ec-invalid-1.pub'),
     'invalid-1': fs.readFileSync('test/fixtures/spki-der/invalid-1.pub'),
 };
 
@@ -16,6 +17,17 @@ describe('decomposePublicKey', () => {
 
     it('should decompose a EC key, secp256k1', () => {
         expect(decomposePublicKey(KEYS['ec-1'], { format: 'spki-der' })).toMatchSnapshot();
+    });
+
+    it('should fail to decompose a EC key with an invalid curve', () => {
+        expect.assertions(2);
+
+        try {
+            decomposePublicKey(KEYS['ec-invalid-1'], { format: 'spki-der' });
+        } catch (err) {
+            expect(err.message).toBe('Unsupported named curve OID \'0.20.999\'');
+            expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
+        }
     });
 
     it('should decompose a ED25519 key', () => {
@@ -66,6 +78,25 @@ describe('composePublicKey', () => {
         const composedKey = composePublicKey(decomposedKey);
 
         expect(composedKey).toEqual(typedArrayToUint8Array(KEYS['ec-1']));
+    });
+
+    it('should fail to compose a EC key with an invalid curve', () => {
+        const decomposedKey = decomposePublicKey(KEYS['ec-1'], { format: 'spki-der' });
+
+        expect.assertions(2);
+
+        try {
+            composePublicKey({
+                ...decomposedKey,
+                keyAlgorithm: {
+                    ...decomposedKey.keyAlgorithm,
+                    namedCurve: 'foo',
+                },
+            }, { format: 'spki-der' });
+        } catch (err) {
+            expect(err.message).toBe('Unsupported named curve \'foo\'');
+            expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
+        }
     });
 
     it('should compose a ED25519 key (mirroring)', () => {

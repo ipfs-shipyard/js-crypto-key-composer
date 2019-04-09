@@ -1,4 +1,4 @@
-import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
+import { decodeAsn1, encodeAsn1 } from '../../util/asn1-encoder';
 import { EncryptedPrivateKeyInfo, Pbes2Algorithms, Pbkdf2Params, Pbes2EsParams, Rc2CbcParameter } from '../../util/asn1-entities';
 import { encryptWithPassword, decryptWithPassword } from '../../util/pbe';
 import { uint8ArrayToInteger, hexStringToUint8Array } from '../../util/binary';
@@ -56,6 +56,7 @@ export const decryptWithPBES2 = (encryptedData, encryptionAlgorithmParamsAsn1, p
         const pbkdf2Params = decodeAsn1(keyDerivationFunc.parameters, Pbkdf2Params);
         const prfId = OIDS[pbkdf2Params.prf.id];
 
+        /* istanbul ignore if */
         if (pbkdf2Params.salt.type !== 'specified') {
             throw new UnsupportedAlgorithmError('Only \'specified\' salts are supported in PBKDF2');
         }
@@ -177,6 +178,7 @@ export const maybeDecryptPrivateKeyInfo = (encryptedPrivateKeyInfoAsn1, password
     try {
         encryptedPrivateKeyInfo = decodeAsn1(encryptedPrivateKeyInfoAsn1, EncryptedPrivateKeyInfo);
     } catch (err) {
+        /* istanbul ignore else */
         if (err instanceof DecodeAsn1FailedError) {
             return {
                 encryptionAlgorithm: null,
@@ -184,6 +186,7 @@ export const maybeDecryptPrivateKeyInfo = (encryptedPrivateKeyInfoAsn1, password
             };
         }
 
+        /* istanbul ignore next */
         throw err;
     }
 

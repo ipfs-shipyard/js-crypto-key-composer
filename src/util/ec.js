@@ -44,4 +44,6 @@ export const validateEcD = (namedCurve, d) => {
     if (!d || d.length < fieldSizeBytes) {
         throw new UnsupportedAlgorithmError(`Expecting d length to be >= ${fieldSizeBytes} bytes`);
     }
+
+    return d;
 };

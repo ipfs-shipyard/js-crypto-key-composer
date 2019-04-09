@@ -38,7 +38,9 @@ const deriveKeyWithPbkdf2 = (password, params) => {
         throw new UnsupportedAlgorithmError(`Unsupported PBKDF2 prf id '${prf}'`);
     }
 
-    return binaryStringToUint8Array(pbkdf2(password, saltStr, iterationCount, keyLength, prfMd));
+    const keyStr = pbkdf2(password, saltStr, iterationCount, keyLength, prfMd);
+
+    return binaryStringToUint8Array(keyStr);
 };
 
 const deriveKeyWithOpensslDeriveBytes = (password, params) => {
@@ -268,8 +270,8 @@ export const encryptWithPassword = (data, encryptionAlgorithm, password) => {
     // Process key derivation name
     switch (keyDerivationFunc.id) {
     case 'pbkdf2':
-        if (derivedKeyLength < keyDerivationFunc.keyLength) {
-            throw new UnsupportedAlgorithmError(`The specified key length must be greater or equal than '${derivedKeyLength}'`);
+        if (keyDerivationFunc.keyLength != null && derivedKeyLength !== keyDerivationFunc.keyLength) {
+            throw new UnsupportedAlgorithmError(`The specified key length must be equal to ${derivedKeyLength} (or omitted)`);
         }
 
         keyDerivationFunc.salt = keyDerivationFunc.salt || randomBytes(16);

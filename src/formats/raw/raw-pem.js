@@ -1,7 +1,7 @@
 import { maybeDecryptPemBody, maybeEncryptPemBody } from './encryption';
 import { decomposeRawPrivateKey, composeRawPrivateKey, decomposeRawPublicKey, composeRawPublicKey } from './keys';
 import { uint8ArrayToBinaryString, binaryStringToUint8Array } from '../../util/binary';
-import { decodePem, encodePem } from '../../util/pem';
+import { decodePem, encodePem } from '../../util/pem-encoder';
 import { DecodePemFailedError, UnsupportedAlgorithmError } from '../../util/errors';
 import { KEY_TYPES } from '../../util/key-types';
 
@@ -33,6 +33,7 @@ export const decomposePrivateKey = (pem, options) => {
     // Extract the key type from it
     const keyType = getKeyType(decodedPem.type);
 
+    /* istanbul ignore if */
     if (!keyType) {
         throw new DecodePemFailedError('Unable to extract key type from PEM', { invalidInputKey: true });
     }
@@ -55,6 +56,7 @@ export const composePrivateKey = ({ keyAlgorithm, keyData, encryptionAlgorithm }
     // Extract the pem type
     const pemKeyType = getPemType(keyAlgorithm);
 
+    /* istanbul ignore if */
     if (!pemKeyType) {
         throw new UnsupportedAlgorithmError('Unable to extract pem type from key algorithm');
     }
@@ -84,6 +86,7 @@ export const decomposePublicKey = (pem) => {
     // Extract the key type from it
     const keyType = getKeyType(decodedPem.type);
 
+    /* istanbul ignore if */
     if (!keyType) {
         throw new DecodePemFailedError('Unable to extract key type from PEM', { invalidInputKey: true });
     }
@@ -106,6 +109,7 @@ export const composePublicKey = ({ keyAlgorithm, keyData }) => {
     // Extract the pem type
     const pemKeyType = getPemType(keyAlgorithm);
 
+    /* istanbul ignore if */
     if (!pemKeyType) {
         throw new UnsupportedAlgorithmError('Unable to extract pem type from key algorithm');
     }

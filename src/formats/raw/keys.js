@@ -1,4 +1,4 @@
-import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
+import { decodeAsn1, encodeAsn1 } from '../../util/asn1-encoder';
 import { RsaPrivateKey, RsaPublicKey, EcPrivateKey } from '../../util/asn1-entities';
 import { decodeEcPoint, encodeEcPoint, validateEcD } from '../../util/ec';
 import { UnsupportedAlgorithmError } from '../../util/errors';
@@ -47,12 +47,15 @@ export const decomposeEcPrivateKey = (ecPrivateKeyAsn1) => {
     const ecPrivateKey = decodeAsn1(ecPrivateKeyAsn1, EcPrivateKey);
 
     // Validate parameters & publicKey
+    /* istanbul ignore if */
     if (!ecPrivateKey.parameters) {
         throw new UnsupportedAlgorithmError('Missing parameters from ECPrivateKey');
     }
+    /* istanbul ignore if */
     if (ecPrivateKey.parameters.type !== 'namedCurve') {
         throw new UnsupportedAlgorithmError('Only EC named curves are supported');
     }
+    /* istanbul ignore if */
     if (!ecPrivateKey.publicKey) {
         throw new UnsupportedAlgorithmError('Missing publicKey from ECPrivateKey');
     }
@@ -88,22 +91,22 @@ export const composeEcPrivateKey = (keyAlgorithm, keyData) => {
         throw new UnsupportedAlgorithmError(`Unsupported named curve '${keyAlgorithm.namedCurve}'`);
     }
 
-    // Validate D value
-    validateEcD(keyAlgorithm.namedCurve, keyData.d);
+    // Validate D value (private key)
+    const privateKey = validateEcD(keyAlgorithm.namedCurve, keyData.d);
 
     // Encode point (public key)
-    const encodedPoint = encodeEcPoint(keyAlgorithm.namedCurve, keyData.x, keyData.y);
+    const publicKey = encodeEcPoint(keyAlgorithm.namedCurve, keyData.x, keyData.y);
 
     const ecPrivateKey = {
         version: 1,
-        privateKey: keyData.d,
+        privateKey,
         parameters: {
             type: 'namedCurve',
             value: namedCurveOid,
         },
         publicKey: {
             unused: 0,
-            data: encodedPoint,
+            data: publicKey,
         },
     };
 

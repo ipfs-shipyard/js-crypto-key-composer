@@ -1,6 +1,6 @@
 /* eslint-disable newline-per-chained-call */
 import { Buffer } from 'buffer';
-import { define, objidValues } from './asn1';
+import { define, objidValues } from './asn1-encoder';
 import { FLIPPED_OIDS } from './oids';
 
 // RAW related entities

@@ -40,6 +40,7 @@ export const encodePem = (decodedPem) => {
     try {
         pem = encode(decodedPem);
     } catch (err) {
+        /* istanbul ignore next */
         throw new EncodePemFailedError('Failed to encode PEM', { originalError: err });
     }
 

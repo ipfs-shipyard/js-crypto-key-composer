@@ -10,6 +10,7 @@ const PRIVATE_KEYS = {
     'ec-2': fs.readFileSync('test/fixtures/raw-der/ec-2'),
     'ec-3': fs.readFileSync('test/fixtures/raw-der/ec-3'),
     'ec-4': fs.readFileSync('test/fixtures/raw-der/ec-4'),
+    'ec-invalid-1': fs.readFileSync('test/fixtures/raw-der/ec-invalid-1'),
 };
 
 const PUBLIC_KEYS = {
@@ -39,6 +40,17 @@ describe('decomposePrivateKey', () => {
 
     it('should decompose a EC key, sect193r1', () => {
         expect(decomposePrivateKey(PRIVATE_KEYS['ec-4'], { format: 'raw-der' })).toMatchSnapshot();
+    });
+
+    it('should fail to decompose a EC key with an invalid curve', () => {
+        expect.assertions(2);
+
+        try {
+            decomposePrivateKey(PRIVATE_KEYS['ec-invalid-1'], { format: 'raw-der' });
+        } catch (err) {
+            expect(err.message).toBe('Unsupported named curve OID \'0.20.999\'');
+            expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
+        }
     });
 
     it('should fail to decompose a compressed EC key', () => {
@@ -130,6 +142,25 @@ describe('composePrivateKey', () => {
             });
         } catch (err) {
             expect(err.message).toBe('Only uncompressed EC points are supported (y must be specified)');
+            expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
+        }
+    });
+
+    it('should fail to compose a EC key with an invalid curve', () => {
+        const decomposedKey = decomposePrivateKey(PRIVATE_KEYS['ec-1'], { format: 'raw-der' });
+
+        expect.assertions(2);
+
+        try {
+            composePrivateKey({
+                ...decomposedKey,
+                keyAlgorithm: {
+                    ...decomposedKey.keyAlgorithm,
+                    namedCurve: 'foo',
+                },
+            }, { format: 'raw-der' });
+        } catch (err) {
+            expect(err.message).toBe('Unsupported named curve \'foo\'');
             expect(err.code).toBe('UNSUPPORTED_ALGORITHM');
         }
     });

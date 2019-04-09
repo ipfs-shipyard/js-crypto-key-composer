@@ -1,5 +1,5 @@
 import { decomposeRsaPrivateKey, composeRsaPrivateKey } from '../raw/keys';
-import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
+import { decodeAsn1, encodeAsn1 } from '../../util/asn1-encoder';
 import { EcParameters, EcPrivateKey, CurvePrivateKey } from '../../util/asn1-entities';
 import { decodeEcPoint, encodeEcPoint, validateEcD } from '../../util/ec';
 import { hexStringToUint8Array } from '../../util/binary';
@@ -25,10 +25,13 @@ const decomposeRsaPrivateKeyInfo = (privateKeyInfo) => {
     case 'sha512-224-with-rsa-encryption':
     case 'sha512-256-with-rsa-encryption':
         break;
+    /* istanbul ignore next */
     case 'rsaes-oaep':
         throw new UnsupportedAlgorithmError('RSA-OAEP keys are not yet supported');
+    /* istanbul ignore next */
     case 'rsassa-pss':
         throw new UnsupportedAlgorithmError('RSA-PSS keys are not yet supported');
+    /* istanbul ignore next */
     default:
         throw new UnsupportedAlgorithmError(`Unsupported key algorithm OID '${privateKeyAlgorithm.id}'`);
     }
@@ -63,9 +66,11 @@ const decomposeEcPrivateKeyInfo = (privateKeyInfo) => {
     const ecPrivateKey = decodeAsn1(privateKeyAsn1, EcPrivateKey);
 
     // Validate parameters & publicKey
+    /* istanbul ignore if */
     if (ecParameters.type !== 'namedCurve') {
         throw new UnsupportedAlgorithmError('Only EC named curves are supported');
     }
+    /* istanbul ignore if */
     if (!ecPrivateKey.publicKey) {
         throw new UnsupportedAlgorithmError('Missing publicKey from ECPrivateKey');
     }
@@ -101,18 +106,18 @@ const composeEcPrivateKeyInfo = (keyAlgorithm, keyData) => {
         throw new UnsupportedAlgorithmError(`Unsupported named curve '${keyAlgorithm.namedCurve}'`);
     }
 
-    // Validate D value
-    validateEcD(keyAlgorithm.namedCurve, keyData.d);
+    // Validate D value (private key)
+    const privateKey = validateEcD(keyAlgorithm.namedCurve, keyData.d);
 
     // Validate & encode point (public key)
-    const encodedPoint = encodeEcPoint(keyAlgorithm.namedCurve, keyData.x, keyData.y);
+    const publicKey = encodeEcPoint(keyAlgorithm.namedCurve, keyData.x, keyData.y);
 
     const ecPrivateKey = {
         version: 1,
-        privateKey: keyData.d,
+        privateKey,
         publicKey: {
             unused: 0,
-            data: encodedPoint,
+            data: publicKey,
         },
     };
 

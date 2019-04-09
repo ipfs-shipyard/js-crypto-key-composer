@@ -76,6 +76,7 @@ export const encodeAsn1 = (decodedEntity, Model) => {
     try {
         encodedEntity = Model.encode(decodedEntity, 'der');
     } catch (err) {
+        /* istanbul ignore next */
         throw new EncodeAsn1FailedError(`Failed to encode ${Model.name}`, Model.name, { originalError: err });
     }
 

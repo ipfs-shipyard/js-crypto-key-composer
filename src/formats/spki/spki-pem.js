@@ -1,6 +1,6 @@
 import { decomposePublicKey as decomposeDerPublicKey, composePublicKey as composeDerPublicKey } from './spki-der';
 import { binaryStringToUint8Array, uint8ArrayToBinaryString } from '../../util/binary';
-import { decodePem, encodePem } from '../../util/pem';
+import { decodePem, encodePem } from '../../util/pem-encoder';
 import { DecodePemFailedError } from '../../util/errors';
 
 export const decomposePublicKey = (pem, options) => {

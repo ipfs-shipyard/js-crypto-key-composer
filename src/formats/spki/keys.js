@@ -1,5 +1,5 @@
 import { decomposeRsaPublicKey, composeRsaPublicKey } from '../raw/keys';
-import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
+import { decodeAsn1, encodeAsn1 } from '../../util/asn1-encoder';
 import { EcParameters } from '../../util/asn1-entities';
 import { decodeEcPoint, encodeEcPoint } from '../../util/ec';
 import { hexStringToUint8Array } from '../../util/binary';
@@ -25,10 +25,13 @@ const decomposeRsaSubjectPublicKeyInfo = (subjectPublicKeyInfo) => {
     case 'sha512-224-with-rsa-encryption':
     case 'sha512-256-with-rsa-encryption':
         break;
+    /* istanbul ignore next */
     case 'rsaes-oaep':
         throw new UnsupportedAlgorithmError('RSA-OAEP keys are not yet supported');
+    /* istanbul ignore next */
     case 'rsassa-pss':
         throw new UnsupportedAlgorithmError('RSA-PSS keys are not yet supported');
+    /* istanbul ignore next */
     default:
         throw new UnsupportedAlgorithmError(`Unsupported key algorithm OID '${algorithm.id}'`);
     }
@@ -64,6 +67,7 @@ const decomposeEcSubjectPublicKeyInfo = (subjectPublicKeyInfo) => {
     const ecParameters = decodeAsn1(algorithm.parameters, EcParameters);
 
     // Validate parameters
+    /* istanbul ignore if */
     if (ecParameters.type !== 'namedCurve') {
         throw new UnsupportedAlgorithmError('Only EC named curves are supported');
     }

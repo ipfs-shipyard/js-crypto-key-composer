@@ -1,5 +1,5 @@
 import { decomposeSubjectPublicKeyInfo, composeSubjectPublicKeyInfo } from './keys';
-import { decodeAsn1, encodeAsn1 } from '../../util/asn1';
+import { decodeAsn1, encodeAsn1 } from '../../util/asn1-encoder';
 import { SubjectPublicKeyInfo } from '../../util/asn1-entities';
 import { DecodeAsn1FailedError } from '../../util/errors';
 
