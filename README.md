@@ -123,7 +123,7 @@ ACTUAL KEY BASE64 HERE
 
 const myDecomposedPublicKey = decomposePublicKey(myPublicPemKey)
 // {
-//     format: 'pkcs1-pem',
+//     format: 'spki-pem',
 //     keyAlgorithm: {
 //         id: 'rsa-encryption'
 //     },
@@ -155,7 +155,7 @@ Composes a public key from its parts: [`format`](#formats), [`keyAlgorithm`](#ke
 import { composePublicKey } from 'crypto-key-composer';
 
 const myPublicPemKey = composePublicKey({
-    format: 'pkcs1-pem',
+    format: 'spki-pem',
     keyAlgorithm: {
         id: 'rsa-encryption',
     },
