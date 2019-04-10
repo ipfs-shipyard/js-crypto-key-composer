@@ -223,7 +223,7 @@ Supported encryption algorithms:
 > ⚠️ It's recommended to use the newer PKCS8 & SPKI formats for private and public keys respectively because they are able to store more types of keys. Moreover, PKCS8 keys have stronger encryption.
 </details>
 
-<details><summary><strong>pcks1-der (private)</strong></summary>
+<details><summary><strong>pkcs1-der (private)</strong></summary>
 
 The `pkcs1-der` is the DER encoded ASN1 format defined in [RFC 8017](https://tools.ietf.org/html/rfc8017). It's a subset of the `raw-der` format, supporting only RSA keys.
 
@@ -235,7 +235,7 @@ Supported encryption algorithms: *none*
 > ⚠️ It's recommended to use the newer PKCS8 format for private keys because it's able to store more types of keys and support encryption.
 </details>
 
-<details><summary><strong>pcks1-pem (private)</strong></summary>
+<details><summary><strong>pkcs1-pem (private)</strong></summary>
 
 The `pkcs1-pem` is the PEM encoded version of `pkcs1-der` and is defined in [RFC 1421](https://tools.ietf.org/html/rfc1421). It's a subset of the `raw-pem` format, supporting only RSA keys.
 
@@ -249,7 +249,7 @@ Supported encryption algorithms:
 > ⚠️ It's recommended to use the newer PKCS8 format for private keys because it's able to store more types of keys and support stronger encryption algorithms.
 </details>
 
-<details><summary><strong>pcks8-der (private)</strong></summary>
+<details><summary><strong>pkcs8-der (private)</strong></summary>
 
 The `pkcs8-der` is the DER encoded ASN1 format defined in [RFC 5208](https://tools.ietf.org/html/rfc5208) and [RFC 5985](https://tools.ietf.org/html/rfc5958).
 
@@ -263,7 +263,7 @@ Supported encryption algorithms ([PKCS#5](https://tools.ietf.org/html/rfc8018)):
 - encryptionScheme: `aes256-cbc` (default), `aes192-cbc`, `aes128-cbc`, `des-ede3-cbc`, `des-cbc`, `rc2-cbc`
 </details>
 
-<details><summary><strong>pcks8-pem (private)</strong></summary>
+<details><summary><strong>pkcs8-pem (private)</strong></summary>
 
 The `pkcs8-pem` is the PEM encoded version of `pkcs8-der` and is defined in [RFC 1421](https://tools.ietf.org/html/rfc1421).
 
