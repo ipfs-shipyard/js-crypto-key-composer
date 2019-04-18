@@ -1,6 +1,6 @@
 {
   "name": "crypto-key-composer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A library to decompose and compose crypto keys of different types and formats",
   "main": "lib/index.js",
   "module": "es/index.js",
