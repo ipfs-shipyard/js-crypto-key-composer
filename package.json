@@ -4,12 +4,12 @@
   "description": "A library to decompose and compose crypto keys of different types and formats",
   "main": "lib/index.js",
   "module": "es/index.js",
-  "homepage": "https://github.com/ipfs-shipyard/js-crypto-key-parse#readme",
+  "homepage": "https://github.com/ipfs-shipyard/js-crypto-key-composer#readme",
   "author": "André Cruz <andre@moxy.studio>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ipfs-shipyard/js-crypto-key-parse.git"
+    "url": "git+https://github.com/ipfs-shipyard/js-crypto-key-composer.git"
   },
   "keywords": [
     "crypto",
@@ -27,7 +27,7 @@
     "secp256k1"
   ],
   "bugs": {
-    "url": "https://github.com/ipfs-shipyard/js-crypto-key-parse/issues"
+    "url": "https://github.com/ipfs-shipyard/js-crypto-key-composer/issues"
   },
   "files": [
     "lib",
