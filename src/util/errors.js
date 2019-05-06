@@ -1,7 +1,9 @@
-class BaseError extends Error {
+import ExtendableError from 'es6-error';
+
+class BaseError extends ExtendableError {
     constructor(message, name, code, props) {
         super(message);
-        Error.captureStackTrace(this, this.constructor);
+
         this.name = name || 'BaseError';
 
         if (code) {
