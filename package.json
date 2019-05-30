@@ -76,7 +76,7 @@
     "husky": "^2.1.0",
     "jest": "^24.5.0",
     "lint-staged": "^8.1.4",
-    "standard-version": "^5.0.0"
+    "standard-version": "^6.0.1"
   },
   "dependencies": {
     "@lordvlad/asn1.js": "^5.1.1",
@@ -84,6 +84,7 @@
     "clone-deep": "^4.0.1",
     "deep-for-each": "^3.0.0",
     "es6-error": "^4.1.1",
+    "lodash": "^4.17.11",
     "matcher": "^2.0.0",
     "node-forge": "^0.8.1"
   }
